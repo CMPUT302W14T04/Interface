@@ -1,0 +1,12 @@
+wiiusej Java API for wiimotes
+http://code.google.com/p/wiiusej/
+
+resolution question
+http://www.wiimoteproject.com/general-discussion/ir-radius
+
+homemade ir pen for wiimote
+http://terracode.com/IR_Pen/DIY_IR_Pen.html
+
+wiimote info wiki
+http://wiibrew.org/wiki/Wiimote
+
