@@ -625,7 +625,7 @@ copy of the Program in return for a fee.
 
 
     LOUIS Interface
-    Copyright (C) 2014  Trevor Wiens, Gerald Manweiler, Ashley Dawn Brown, Eddie Tai, Jesse Chu, James Cadek
+    Copyright (C) 2014  Trevor Wiens, Gerald Manweiler, Ashley Dawn Brown, Eddie Tai, Yi Zou, James Cadek
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
