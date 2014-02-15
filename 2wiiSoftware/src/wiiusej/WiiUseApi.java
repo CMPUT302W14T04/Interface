@@ -26,7 +26,7 @@ import wiiusej.wiiusejevents.utils.EventsGatherer;
 public class WiiUseApi {
 
 	static {
-		System.loadLibrary("WiiuseJ64");
+		System.loadLibrary("WiiuseJ");
 	}
 
 	private static WiiUseApi instance = new WiiUseApi();
