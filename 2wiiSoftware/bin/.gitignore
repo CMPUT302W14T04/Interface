@@ -6,3 +6,6 @@ bin/
 
 # LOCAL configuration file (sdk path, etc)
 local.properties
+
+# Settings folder
+2wiiSoftware/.settings
