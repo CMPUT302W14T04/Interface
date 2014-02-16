@@ -1,1 +1,8 @@
 /wiiusej
+
+# generated files
+bin/
+2wiiSoftware/bin
+
+# LOCAL configuration file (sdk path, etc)
+local.properties
