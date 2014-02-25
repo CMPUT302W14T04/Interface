@@ -62,7 +62,7 @@ public class IRCombined extends javax.swing.JPanel {
 	 * sources : circle with a diameter of 10.
 	 */
 	public IRCombined() {
-		shape = new java.awt.geom.Ellipse2D.Double(0, 0, 3, 3);
+		shape = new java.awt.geom.Ellipse2D.Double(0, 0, 1, 1);
 		initArrays();
 		initComponents();
 	}
@@ -136,7 +136,7 @@ public class IRCombined extends javax.swing.JPanel {
 				
 				if ((xx - xx2) < 1000){
 					if((yy-yy2) < 1000){
-						g2.setStroke(new BasicStroke(3));
+						g2.setStroke(new BasicStroke(1));
 						g2.setPaint(Color.BLACK);
 						g2.draw(new Line2D.Double(xx2 - xx,yy2 - yy,0 ,0));				
 					}
