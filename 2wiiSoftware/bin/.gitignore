@@ -1,0 +1,15 @@
+/wiiusej
+
+# generated files
+bin/
+2wiiSoftware/bin
+
+# LOCAL configuration file (sdk path, etc)
+local.properties
+
+# Settings folder
+2wiiSoftware/.settings
+
+# 64 or 32bit wiiusej dll in 2wiiSoftware
+2wiiSoftware/Wiiuse.dll
+2wiiSoftware/Wiiusej.dll
