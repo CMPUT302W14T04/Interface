@@ -890,7 +890,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	public static void calibrate(){
 		int[][] calibMatrix = new int[8][2];
 		int[][] coords = cal.eventFilter(2);
-				
+		cal.setF(8f, 5.5f);		
 		cal.setDefaultFloor((coords[0][1] + coords[1][1])/2);
 		cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote, wiimote2);
 		clearViews();
