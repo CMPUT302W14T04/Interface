@@ -1,1 +1,17 @@
 /wiiusej
+<<<<<<< HEAD
+=======
+
+# generated files
+bin/
+2wiiSoftware/bin
+
+# LOCAL configuration file (sdk path, etc)
+local.properties
+
+# Settings folder
+2wiiSoftware/.settings
+
+# classpath
+.classpath
+>>>>>>> 6cac86ef7bd65b7db9abee57b1aaebe7a6959feb
