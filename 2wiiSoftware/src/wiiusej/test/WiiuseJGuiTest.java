@@ -900,7 +900,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		((IRCombined) irCombined).drawCalib(calibMatrix[0]);
 		for(int i = 2; i < 9; i++){
 			while(calibButton.isEnabled() == true){
-				System.out.print("Select Point: " + i + "\n");
+				System.out.print("SP: " + i + "");
 			}
 			int[][] temp = cal.getCalibPoints(calibButton);
 			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
