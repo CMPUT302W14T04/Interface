@@ -1,0 +1,173 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x000007fef9db24e0, pid=5428, tid=5784
+#
+# JRE version: 6.0_17-b04
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (14.3-b01 mixed mode windows-amd64 )
+# Problematic frame:
+# C  [wiiuse.dll+0x24e0]
+#
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000005bb5000):  JavaThread "Thread-0" [_thread_in_native, id=5784, stack(0x0000000006870000,0x0000000006970000)]
+
+siginfo: ExceptionCode=0xc0000005, reading address 0x000000020000001a
+
+Registers:
+EAX=0x0000000000000000, EBX=0x0000000000262618, ECX=0x0000000200000002, EDX=0x0000000000000002
+ESP=0x000000000696f340, EBP=0x0000000000000000, ESI=0x0000000000260158, EDI=0x0000000000000003
+EIP=0x000007fef9db24e0, EFLAGS=0x0000000000010202
+
+Top of Stack: (sp=0x000000000696f340)
+0x000000000696f340:   0000000064fc2620 000007fef9db63a0
+0x000000000696f350:   0000000000000000 0000000000000000
+0x000000000696f360:   0000000000000000 000007fef9db2b91
+0x000000000696f370:   0000000000262610 0000000000000000
+0x000000000696f380:   0000000000000000 0000000000000000
+0x000000000696f390:   0000000005be0a30 000007fefa341648
+0x000000000696f3a0:   0000000000000000 00000000802799b8
+0x000000000696f3b0:   0000000000000000 0000000000000003
+0x000000000696f3c0:   0000000005b9a5d8 000000006d8e5cd9
+0x000000000696f3d0:   0000000005b9a5d8 00000000ffffffff
+0x000000000696f3e0:   0000000005bb5000 0000000005b9a5d8
+0x000000000696f3f0:   00000000000007d1 000000006db5eb83
+0x000000000696f400:   0000000005bb5000 0000000005b9a5d8
+0x000000000696f410:   0000001500000012 000000a00000001e
+0x000000000696f420:   0000000005b9a500 000000006d8d0966
+0x000000000696f430:   0000000000450b30 0000000000000003 
+
+Instructions: (pc=0x000007fef9db24e0)
+0x000007fef9db24d0:   48 8b 5c 24 30 48 8b 4e 50 48 85 c9 74 1f 66 90
+0x000007fef9db24e0:   80 79 18 00 74 17 48 8b 41 20 48 89 46 50 ff 15 
+
+
+Stack: [0x0000000006870000,0x0000000006970000],  sp=0x000000000696f340,  free space=1020k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [wiiuse.dll+0x24e0]
+
+[error occurred during error reporting (printing native stack), id 0xc0000005]
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  wiiusej.WiiUseApi.specialPoll(Lwiiusej/wiiusejevents/utils/EventsGatherer;)V+0
+j  wiiusej.WiiUseApiManager.run()V+65
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x00000000069c8800 JavaThread "TimerQueue" daemon [_thread_blocked, id=4972, stack(0x000000000a800000,0x000000000a900000)]
+  0x0000000006b10800 JavaThread "AWT-EventQueue-0" [_thread_blocked, id=4628, stack(0x00000000097b0000,0x00000000098b0000)]
+  0x0000000006a39000 JavaThread "AWT-Shutdown" [_thread_blocked, id=4404, stack(0x00000000070f0000,0x00000000071f0000)]
+  0x0000000005cfe800 JavaThread "Java2D Disposer" daemon [_thread_blocked, id=3928, stack(0x0000000006ff0000,0x00000000070f0000)]
+=>0x0000000005bb5000 JavaThread "Thread-0" [_thread_in_native, id=5784, stack(0x0000000006870000,0x0000000006970000)]
+  0x0000000005ba1800 JavaThread "Low Memory Detector" daemon [_thread_blocked, id=6024, stack(0x0000000006400000,0x0000000006500000)]
+  0x0000000005b98800 JavaThread "CompilerThread1" daemon [_thread_blocked, id=5792, stack(0x0000000006300000,0x0000000006400000)]
+  0x0000000005b95000 JavaThread "CompilerThread0" daemon [_thread_blocked, id=5408, stack(0x0000000006200000,0x0000000006300000)]
+  0x0000000005b93800 JavaThread "Attach Listener" daemon [_thread_blocked, id=5372, stack(0x0000000006100000,0x0000000006200000)]
+  0x0000000005b93000 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=5384, stack(0x0000000006000000,0x0000000006100000)]
+  0x0000000005b42000 JavaThread "Finalizer" daemon [_thread_blocked, id=1932, stack(0x0000000005f00000,0x0000000006000000)]
+  0x0000000000524800 JavaThread "Reference Handler" daemon [_thread_blocked, id=3836, stack(0x0000000005e00000,0x0000000005f00000)]
+  0x000000000059b000 JavaThread "main" [_thread_in_Java, id=6064, stack(0x0000000002090000,0x0000000002190000)]
+
+Other Threads:
+  0x0000000005b40800 VMThread [stack: 0x0000000005d00000,0x0000000005e00000] [id=1484]
+  0x0000000005ba5800 WatcherThread [stack: 0x0000000006500000,0x0000000006600000] [id=4112]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap
+ PSYoungGen      total 37056K, used 16876K [0x00000000d7ea0000, 0x00000000da7f0000, 0x00000001013f0000)
+  eden space 31808K, 42% used [0x00000000d7ea0000,0x00000000d8be0900,0x00000000d9db0000)
+  from space 5248K, 63% used [0x00000000da2d0000,0x00000000da60a990,0x00000000da7f0000)
+  to   space 5248K, 0% used [0x00000000d9db0000,0x00000000d9db0000,0x00000000da2d0000)
+ PSOldGen        total 84608K, used 0K [0x00000000853f0000, 0x000000008a690000, 0x00000000d7ea0000)
+  object space 84608K, 0% used [0x00000000853f0000,0x00000000853f0000,0x000000008a690000)
+ PSPermGen       total 21248K, used 11918K [0x000000007fff0000, 0x00000000814b0000, 0x00000000853f0000)
+  object space 21248K, 56% used [0x000000007fff0000,0x0000000080b93ac0,0x00000000814b0000)
+
+Dynamic libraries:
+0x0000000000400000 - 0x000000000042e000 	C:\Program Files\Java\jre6\bin\javaw.exe
+0x0000000076d10000 - 0x0000000076eb9000 	C:\Windows\SYSTEM32\ntdll.dll
+0x0000000076bf0000 - 0x0000000076d0f000 	C:\Windows\system32\kernel32.dll
+0x000007fefcd70000 - 0x000007fefcddb000 	C:\Windows\system32\KERNELBASE.dll
+0x000007fefe0a0000 - 0x000007fefe17b000 	C:\Windows\system32\ADVAPI32.dll
+0x000007fefe670000 - 0x000007fefe70f000 	C:\Windows\system32\msvcrt.dll
+0x000007fefe820000 - 0x000007fefe83f000 	C:\Windows\SYSTEM32\sechost.dll
+0x000007fefcfd0000 - 0x000007fefd0fd000 	C:\Windows\system32\RPCRT4.dll
+0x0000000076af0000 - 0x0000000076bea000 	C:\Windows\system32\USER32.dll
+0x000007fefebc0000 - 0x000007fefec27000 	C:\Windows\system32\GDI32.dll
+0x000007fefe740000 - 0x000007fefe74e000 	C:\Windows\system32\LPK.dll
+0x000007fefe750000 - 0x000007fefe819000 	C:\Windows\system32\USP10.dll
+0x000007fefe710000 - 0x000007fefe73e000 	C:\Windows\system32\IMM32.DLL
+0x000007fefd1a0000 - 0x000007fefd2a9000 	C:\Windows\system32\MSCTF.dll
+0x000000006d7f0000 - 0x000000006de4d000 	C:\Program Files\Java\jre6\bin\server\jvm.dll
+0x000007fefa630000 - 0x000007fefa66b000 	C:\Windows\system32\WINMM.dll
+0x000000006d760000 - 0x000000006d76e000 	C:\Program Files\Java\jre6\bin\verify.dll
+0x000000006d3b0000 - 0x000000006d3d7000 	C:\Program Files\Java\jre6\bin\java.dll
+0x000000006d310000 - 0x000000006d31a000 	C:\Program Files\Java\jre6\bin\hpi.dll
+0x0000000076ed0000 - 0x0000000076ed7000 	C:\Windows\system32\PSAPI.DLL
+0x000000006d7b0000 - 0x000000006d7c2000 	C:\Program Files\Java\jre6\bin\zip.dll
+0x000007fefa340000 - 0x000007fefa349000 	C:\Users\James\Documents\GitHub\Interface\4wiiSoftware\WiiuseJ.dll
+0x000007fef9db0000 - 0x000007fef9dbc000 	C:\Users\James\Documents\GitHub\Interface\4wiiSoftware\wiiuse.dll
+0x000007fefe840000 - 0x000007fefe88d000 	C:\Windows\system32\WS2_32.dll
+0x000007fefea90000 - 0x000007fefea98000 	C:\Windows\system32\NSI.dll
+0x000007fefafa0000 - 0x000007fefafab000 	C:\Windows\system32\HID.DLL
+0x000007fefee40000 - 0x000007feff017000 	C:\Windows\system32\SETUPAPI.dll
+0x000007fefce80000 - 0x000007fefceb6000 	C:\Windows\system32\CFGMGR32.dll
+0x000007fefcef0000 - 0x000007fefcfc7000 	C:\Windows\system32\OLEAUT32.dll
+0x000007fefec30000 - 0x000007fefee33000 	C:\Windows\system32\ole32.dll
+0x000007fefcb70000 - 0x000007fefcb8a000 	C:\Windows\system32\DEVOBJ.dll
+0x0000000064f10000 - 0x0000000064fe2000 	C:\Windows\system32\MSVCR100.dll
+0x000007fefcd00000 - 0x000007fefcd3a000 	C:\Windows\system32\WINTRUST.dll
+0x000007fefcb90000 - 0x000007fefccfc000 	C:\Windows\system32\CRYPT32.dll
+0x000007fefcb60000 - 0x000007fefcb6f000 	C:\Windows\system32\MSASN1.dll
+0x000000006d000000 - 0x000000006d1c1000 	C:\Program Files\Java\jre6\bin\awt.dll
+0x000007fef9350000 - 0x000007fef93c1000 	C:\Windows\system32\WINSPOOL.DRV
+0x000007fefd2b0000 - 0x000007fefe038000 	C:\Windows\system32\SHELL32.dll
+0x000007fefeb20000 - 0x000007fefeb91000 	C:\Windows\system32\SHLWAPI.dll
+0x000007fefaf30000 - 0x000007fefaf48000 	C:\Windows\system32\DWMAPI.DLL
+0x000007fefb360000 - 0x000007fefb3b6000 	C:\Windows\system32\uxtheme.dll
+0x000000006d2a0000 - 0x000000006d30b000 	C:\Program Files\Java\jre6\bin\fontmanager.dll
+0x000007fefc9f0000 - 0x000007fefc9ff000 	C:\Windows\system32\CRYPTBASE.dll
+0x000000006d600000 - 0x000000006d617000 	C:\Program Files\Java\jre6\bin\net.dll
+0x000007fefc330000 - 0x000007fefc385000 	C:\Windows\system32\mswsock.dll
+0x000007fefc320000 - 0x000007fefc327000 	C:\Windows\System32\wship6.dll
+0x000000006d620000 - 0x000000006d62b000 	C:\Program Files\Java\jre6\bin\nio.dll
+0x000000006d210000 - 0x000000006d238000 	C:\Program Files\Java\jre6\bin\dcpr.dll
+
+VM Arguments:
+jvm_args: -Dfile.encoding=Cp1252 
+java_command: wiiusej.test.Main
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+CLASSPATH=.;.;C:\PROGRA~2\JMF21~1.1E\lib\sound.jar;C:\PROGRA~2\JMF21~1.1E\lib\jmf.jar;C:\PROGRA~2\JMF21~1.1E\lib;
+PATH=C:\Program Files\Common Files\Microsoft Shared\Windows Live;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static
+USERNAME=James
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=AMD64 Family 16 Model 6 Stepping 3, AuthenticAMD
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 7 Build 7601 Service Pack 1
+
+CPU:total 2 (2 cores per cpu, 1 threads per core) family 16 model 6 stepping 3, cmov, cx8, fxsr, mmx, sse, sse2, sse3, mmxext, 3dnow, 3dnowext
+
+Memory: 4k page, physical 8121244k(5580652k free), swap 16240624k(11759752k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (14.3-b01) for windows-amd64 JRE (1.6.0_17-b04), built on Oct 11 2009 00:46:08 by "java_re" with MS VC++ 8.0
+
+time: Sun Mar 09 16:53:41 2014
+elapsed time: 30 seconds
+
