@@ -33,7 +33,7 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		System.getProperties().put("org.apache.commons.logging.simplelog.defaultlog","fatal");
-		Wiimote[] wiimotes = WiiUseApiManager.getWiimotes(2, true);
+		Wiimote[] wiimotes = WiiUseApiManager.getWiimotes(0, true);
 		
 		WiiuseJGuiTest gui = null;
 		if (wiimotes.length > 0) {

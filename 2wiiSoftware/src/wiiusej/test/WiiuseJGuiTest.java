@@ -92,26 +92,28 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 			// nothing
 		}
 
+		// unrelated to us; comment it out
 		public void windowActivated(WindowEvent e) {
-			showExpansionWiimoteButton.setEnabled(false);
-                        if (expansionFrame instanceof NunchukGuiTest){
-                            showExpansionWiimoteButton.setText("Hide Nunchuk");
-                        }else if(expansionFrame instanceof GuitarHero3GuiTest){
-                            showExpansionWiimoteButton.setText("Hide Guitar");
-                        }else if(expansionFrame instanceof ClassicControllerGuiTest){
-                            showExpansionWiimoteButton.setText("Hide Classic Controller");
-                        }			
+//			showExpansionWiimoteButton.setEnabled(false);
+//                        if (expansionFrame instanceof NunchukGuiTest){
+//                            showExpansionWiimoteButton.setText("Hide Nunchuk");
+//                        }else if(expansionFrame instanceof GuitarHero3GuiTest){
+//                            showExpansionWiimoteButton.setText("Hide Guitar");
+//                        }else if(expansionFrame instanceof ClassicControllerGuiTest){
+//                            showExpansionWiimoteButton.setText("Hide Classic Controller");
+//                        }			
 		}
 
+		// unrelated to us; comment it out
 		public void windowDeactivated(WindowEvent e) {
-			showExpansionWiimoteButton.setEnabled(true);			
-                        if (expansionFrame instanceof NunchukGuiTest){
-                            showExpansionWiimoteButton.setText("Show Nunchuk");
-                        }else if(expansionFrame instanceof GuitarHero3GuiTest){
-                            showExpansionWiimoteButton.setText("Show Guitar");
-                        }else if(expansionFrame instanceof ClassicControllerGuiTest){
-                            showExpansionWiimoteButton.setText("Show Classic controller");
-                        }
+//			showExpansionWiimoteButton.setEnabled(true);			
+//                        if (expansionFrame instanceof NunchukGuiTest){
+//                            showExpansionWiimoteButton.setText("Show Nunchuk");
+//                        }else if(expansionFrame instanceof GuitarHero3GuiTest){
+//                            showExpansionWiimoteButton.setText("Show Guitar");
+//                        }else if(expansionFrame instanceof ClassicControllerGuiTest){
+//                            showExpansionWiimoteButton.setText("Show Classic controller");
+//                        }
 		}
 	};
 	
@@ -131,6 +133,8 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	public WiiuseJGuiTest(Wiimote wiimote, Wiimote wiimote2) {
 		initComponents();
 		this.addWindowListener(new CloseGuiTestCleanly());
+		
+		// checks for wiimote connection and setups the wiimote
 		if (wiimote != null) {
 			if(wiimote2 != null){
 				
@@ -157,6 +161,9 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		((IRPanel) irViewPanel2).clearView();
 		((IRCombined) irCombined).clearView();
 		
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
 //		((ButtonsEventPanel) buttonsPanel).clearView();
 //		((OrientationPanel) motionSensingPanel).clearView();
 //		((GForcePanel) gForcePanel).clearView();
@@ -170,10 +177,13 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		wiimote.removeWiiMoteEventListeners((IRPanel) irViewPanel1);
 		wiimote2.removeWiiMoteEventListeners((IRPanel) irViewPanel2);
 		
-		wiimote.removeWiiMoteEventListeners((ButtonsEventPanel) buttonsPanel);
-		wiimote.removeWiiMoteEventListeners((OrientationPanel) motionSensingPanel);
-		wiimote.removeWiiMoteEventListeners((GForcePanel) gForcePanel);
-		wiimote.removeWiiMoteEventListeners((AccelerationPanel) accelerationPanel);
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//		wiimote.removeWiiMoteEventListeners((ButtonsEventPanel) buttonsPanel);
+//		wiimote.removeWiiMoteEventListeners((OrientationPanel) motionSensingPanel);
+//		wiimote.removeWiiMoteEventListeners((GForcePanel) gForcePanel);
+//		wiimote.removeWiiMoteEventListeners((AccelerationPanel) accelerationPanel);
 		wiimote.removeWiiMoteEventListeners(this);
 	}
 
@@ -184,17 +194,18 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		wiimote.setSensorBarBelowScreen();
 	}
 
-	/**
-	 * Register all listeners
-	 */
+
 	private void registerListeners() {
 		wiimote.addWiiMoteEventListeners((IRPanel) irViewPanel1);
 		wiimote2.addWiiMoteEventListeners((IRPanel) irViewPanel2);
 		
-		wiimote.addWiiMoteEventListeners((ButtonsEventPanel) buttonsPanel);
-		wiimote.addWiiMoteEventListeners((OrientationPanel) motionSensingPanel);
-		wiimote.addWiiMoteEventListeners((GForcePanel) gForcePanel);
-		wiimote.addWiiMoteEventListeners((AccelerationPanel) accelerationPanel);
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//		wiimote.addWiiMoteEventListeners((ButtonsEventPanel) buttonsPanel);
+//		wiimote.addWiiMoteEventListeners((OrientationPanel) motionSensingPanel);
+//		wiimote.addWiiMoteEventListeners((GForcePanel) gForcePanel);
+//		wiimote.addWiiMoteEventListeners((AccelerationPanel) accelerationPanel);
 		wiimote.addWiiMoteEventListeners(this);
 
 	}
@@ -265,33 +276,39 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	}
 
 	public void onStatusEvent(StatusEvent arg0) {
-		if (!isFirstStatusGot) {
-			if (arg0.isNunchukConnected()) {
-				showExpansionWiimoteButton.setEnabled(true);
-				showExpansionWiimoteButton.setText("Show Nunchuk");
-				expansionFrame = new NunchukGuiTest(wiimote);
-				expansionFrame
-						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-				expansionFrame.addWindowListener(buttonSetter);
-				isFirstStatusGot = true;
-			}else if(arg0.isClassicControllerConnected()){
-                                showExpansionWiimoteButton.setEnabled(true);
+		if (!isFirstStatusGot) {			
+			if(arg0.isClassicControllerConnected()){
+                showExpansionWiimoteButton.setEnabled(true);
 				showExpansionWiimoteButton.setText("Show Classic Controller");
 				expansionFrame = new ClassicControllerGuiTest(wiimote);
 				expansionFrame
 						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 				expansionFrame.addWindowListener(buttonSetter);
 				isFirstStatusGot = true;
-                        }
-                        else if(arg0.isGuitarHeroConnected()){
-                                showExpansionWiimoteButton.setEnabled(true);
-				showExpansionWiimoteButton.setText("Show Guitar Hero 3 Controller");
-				expansionFrame = new GuitarHero3GuiTest(wiimote);
-				expansionFrame
-						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-				expansionFrame.addWindowListener(buttonSetter);
-				isFirstStatusGot = true;
-                        }
+                }
+                    
+			/**
+			 * Original Wiiusej components that are not used for our purposes -Eddie
+			 */
+//			else if (arg0.isNunchukConnected()) {
+//				showExpansionWiimoteButton.setEnabled(true);
+//				showExpansionWiimoteButton.setText("Show Nunchuk");
+//				expansionFrame = new NunchukGuiTest(wiimote);
+//				expansionFrame
+//						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+//				expansionFrame.addWindowListener(buttonSetter);
+//				isFirstStatusGot = true;
+//			}
+//			else if(arg0.isGuitarHeroConnected()){
+//                showExpansionWiimoteButton.setEnabled(true);
+//				showExpansionWiimoteButton.setText("Show Guitar Hero 3 Controller");
+//				expansionFrame = new GuitarHero3GuiTest(wiimote);
+//				expansionFrame
+//						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+//				expansionFrame.addWindowListener(buttonSetter);
+//				isFirstStatusGot = true;
+//                }
+			
 		}
 		messageText.setText("Status received !");
 		batteryLevelText.setText(arg0.getBatteryLevel() + " %");
@@ -308,14 +325,18 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 			expansionText.setText("Classic control connected.");
 		} else if (eventType == StatusEvent.WIIUSE_CLASSIC_CTRL_REMOVED) {
 			expansionText.setText("Classic control removed.");
-		} else if (eventType == StatusEvent.WIIUSE_NUNCHUK_INSERTED) {
-			expansionText.setText("Nunchuk connected.");
-		} else if (eventType == StatusEvent.WIIUSE_NUNCHUK_REMOVED) {
-			expansionText.setText("Nunchuk removed.");
-		} else if (eventType == StatusEvent.WIIUSE_GUITAR_HERO_3_CTRL_INSERTED) {
-			expansionText.setText("Guitar Hero 3 control connected.");
-		} else if (eventType == StatusEvent.WIIUSE_GUITAR_HERO_3_CTRL_REMOVED) {
-			expansionText.setText("Guitar Hero 3 control removed.");
+			
+			/**
+			 * Original Wiiusej components that are not used for our purposes -Eddie
+			 */
+//		} else if (eventType == StatusEvent.WIIUSE_NUNCHUK_INSERTED) {
+//			expansionText.setText("Nunchuk connected.");
+//		} else if (eventType == StatusEvent.WIIUSE_NUNCHUK_REMOVED) {
+//			expansionText.setText("Nunchuk removed.");
+//		} else if (eventType == StatusEvent.WIIUSE_GUITAR_HERO_3_CTRL_INSERTED) {
+//			expansionText.setText("Guitar Hero 3 control connected.");
+//		} else if (eventType == StatusEvent.WIIUSE_GUITAR_HERO_3_CTRL_REMOVED) {
+//			expansionText.setText("Guitar Hero 3 control removed.");
 		}
 	}
 
@@ -335,17 +356,35 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        leftPanel = new javax.swing.JPanel();
+        
+        
+        // IR dot panel to show what an individual wiimote picks up
         irViewPanel1 = new IRPanel();
         irViewPanel2 = new IRPanel();
+        // IR panel to draw the combined coordinates from the individual irViewPanel
         irCombined = new IRCombined();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        accelerationPanel = new AccelerationWiimoteEventPanel();
-        motionSensingPanel = new OrientationWiimoteEventPanel();
-        gForcePanel = new wiiusej.utils.GForceWiimoteEventPanel();
-        rightPanel = new javax.swing.JPanel();
-        buttonsPanel = new ButtonsEventPanel();
-        controlsPanel = new javax.swing.JPanel();
+        
+        // this is the panel containing irCombined, formerly leftpanel
+        irCombinedPanel = new javax.swing.JPanel();
+        
+        // this is the panel containing individual, formerly rightpanel 
+        irPadPanel = new javax.swing.JPanel();
+        
+        
+        
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//        TabbedPane1 = new javax.swing.JTabbedPane();
+//        accelerationPanel = new AccelerationWiimoteEventPanel();
+//        motionSensingPanel = new OrientationWiimoteEventPanel();
+//        gForcePanel = new wiiusej.utils.GForceWiimoteEventPanel();
+//        buttonsPanel = new ButtonsEventPanel();
+//        controlsPanel = new javax.swing.JPanel();
+        
+        // panel containing drawpad
+        
+
         activateRumbleIRPanel = new javax.swing.JPanel();
 
         toggleIRTrackingButton = new javax.swing.JButton();
@@ -398,7 +437,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
         setTitle("IR Paint");
         setName("IR Paint"); // NOI18N
 
-        leftPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        irPadPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         irViewPanel1.setBackground(new java.awt.Color(0, 0, 0));
         irViewPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 153, 153), 2, true), "IR: Remote #1", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(255, 0, 51)));
@@ -449,61 +488,70 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
         		.addGap(0, 299, Short.MAX_VALUE)
         		);
 
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//        accelerationPanel.setToolTipText("MotionSensingEvent");
+//
+//        javax.swing.GroupLayout accelerationPanelLayout = new javax.swing.GroupLayout(accelerationPanel);
+//        accelerationPanel.setLayout(accelerationPanelLayout);
+//        accelerationPanelLayout.setHorizontalGroup(
+//            accelerationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 279, Short.MAX_VALUE)
+//        );
+//        accelerationPanelLayout.setVerticalGroup(
+//            accelerationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 213, Short.MAX_VALUE)
+//        );
+//
+//        jTabbedPane1.addTab("Acceleration", accelerationPanel);
 
-        accelerationPanel.setToolTipText("MotionSensingEvent");
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//        javax.swing.GroupLayout motionSensingPanelLayout = new javax.swing.GroupLayout(motionSensingPanel);
+//        motionSensingPanel.setLayout(motionSensingPanelLayout);
+//        motionSensingPanelLayout.setHorizontalGroup(
+//            motionSensingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 279, Short.MAX_VALUE)
+//        );
+//        motionSensingPanelLayout.setVerticalGroup(
+//            motionSensingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 213, Short.MAX_VALUE)
+//        );
 
-        javax.swing.GroupLayout accelerationPanelLayout = new javax.swing.GroupLayout(accelerationPanel);
-        accelerationPanel.setLayout(accelerationPanelLayout);
-        accelerationPanelLayout.setHorizontalGroup(
-            accelerationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 279, Short.MAX_VALUE)
-        );
-        accelerationPanelLayout.setVerticalGroup(
-            accelerationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 213, Short.MAX_VALUE)
-        );
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//        jTabbedPane1.addTab("Orientation", motionSensingPanel);
+//        javax.swing.GroupLayout gForcePanelLayout = new javax.swing.GroupLayout(gForcePanel);
+//        gForcePanel.setLayout(gForcePanelLayout);
+//        gForcePanelLayout.setHorizontalGroup(
+//            gForcePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 279, Short.MAX_VALUE)
+//        );
+//        gForcePanelLayout.setVerticalGroup(
+//            gForcePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+//            .addGap(0, 213, Short.MAX_VALUE)
+//        );
 
-        //jTabbedPane1.addTab("Acceleration", accelerationPanel);
-
-        javax.swing.GroupLayout motionSensingPanelLayout = new javax.swing.GroupLayout(motionSensingPanel);
-        motionSensingPanel.setLayout(motionSensingPanelLayout);
-        motionSensingPanelLayout.setHorizontalGroup(
-            motionSensingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 279, Short.MAX_VALUE)
-        );
-        motionSensingPanelLayout.setVerticalGroup(
-            motionSensingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 213, Short.MAX_VALUE)
-        );
-
-       // jTabbedPane1.addTab("Orientation", motionSensingPanel);
-
-        javax.swing.GroupLayout gForcePanelLayout = new javax.swing.GroupLayout(gForcePanel);
-        gForcePanel.setLayout(gForcePanelLayout);
-        gForcePanelLayout.setHorizontalGroup(
-            gForcePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 279, Short.MAX_VALUE)
-        );
-        gForcePanelLayout.setVerticalGroup(
-            gForcePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 213, Short.MAX_VALUE)
-        );
-
-        //jTabbedPane1.addTab("GForce", gForcePanel);
+//		  jTabbedPane1.addTab("GForce", gForcePanel);
 
        
 
-        jTabbedPane1.getAccessibleContext().setAccessibleName("Orientation");
+//        jTabbedPane1.getAccessibleContext().setAccessibleName("Orientation");
         
         
-        rightPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        rightPanel.setLayout(new javax.swing.BoxLayout(rightPanel, javax.swing.BoxLayout.LINE_AXIS));
+        irCombinedPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        irCombinedPanel.setLayout(new javax.swing.BoxLayout(irCombinedPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         
-
-        controlsPanel.setMinimumSize(new java.awt.Dimension(100, 264));
-        controlsPanel.setPreferredSize(new java.awt.Dimension(190, 264));
-        controlsPanel.setLayout(new java.awt.GridLayout(16, 1));
+		/**
+		 * Original Wiiusej components that are not used for our purposes -Eddie
+		 */
+//        controlsPanel.setMinimumSize(new java.awt.Dimension(100, 264));
+//        controlsPanel.setPreferredSize(new java.awt.Dimension(190, 264));
+//        controlsPanel.setLayout(new java.awt.GridLayout(16, 1));
 
        
 
@@ -611,17 +659,17 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 
         
         
-        javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
-        leftPanel.setLayout(leftPanelLayout);
-        leftPanelLayout.setHorizontalGroup(
-            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout irPadPanelLayout = new javax.swing.GroupLayout(irPadPanel);
+        irPadPanel.setLayout(irPadPanelLayout);
+        irPadPanelLayout.setHorizontalGroup(
+            irPadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(irViewPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(irViewPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(activateRumbleIRPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        leftPanelLayout.setVerticalGroup(
-            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
+        irPadPanelLayout.setVerticalGroup(
+            irPadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, irPadPanelLayout.createSequentialGroup()
             	.addComponent(activateRumbleIRPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(irViewPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(irViewPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -632,16 +680,16 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
         
         
         //controlsPanel.add(jTabbedPane1);
-        //rightPanel.add(controlsPanel);
-        rightPanel.add(irCombined);
+        //irCombinedPanel.add(controlsPanel);
+        irCombinedPanel.add(irCombined);
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(leftPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)                
+                .addComponent(irPadPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)                
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+                .addComponent(irCombinedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
                 //.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 //.addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
                 )
@@ -649,8 +697,8 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
-            .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+            .addComponent(irPadPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+            .addComponent(irCombinedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
             //.addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
         );
 
@@ -851,7 +899,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
     private javax.swing.JButton led2Button;
     private static javax.swing.JButton calibButton;
     private javax.swing.JButton LRButton;
-    private javax.swing.JPanel leftPanel;
+    private javax.swing.JPanel irPadPanel;
 
     private javax.swing.JLabel messageText;
 
@@ -860,7 +908,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 
 
     private javax.swing.JTextField orientationThresholdTextField;
-    private javax.swing.JPanel rightPanel;
+    private javax.swing.JPanel irCombinedPanel;
     
     private javax.swing.JPanel setIRConfPanel;
     private javax.swing.JButton setIrSensitivyButton;
@@ -882,26 +930,35 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		int[] adjustLast = cal.calculateOffsets(lastX,lastY);
 		
 		((IRCombined) irCombined).onIrEvent(adjust[0], adjust[1],adjustLast[0],adjustLast[1]);
-		
-		
-		
 	}
 	
+	// James's calibration routine
 	public static void calibrate(){
 		int[][] calibMatrix = new int[9][2];
 		int[][] coords = cal.eventFilter(2);
 		cal.setF(8f, 5.5f);		
 		cal.setDefaultFloor((coords[0][1] + coords[1][1])/2);
 		cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote, wiimote2);
+		
+		// clears what's drawn so far if calibration is required
 		clearViews();
 		calibMatrix[0] = cal.calculateOffsets(coords[0][0], coords[1][0]);
 		calibButton.setEnabled(true);
 		calibButton.setText("Capture");
 		((IRCombined) irCombined).drawCalib(calibMatrix[0]);
+		
+		// calibration routine for points 1 to 8
+		// need to inject verbal instructions here
 		for(int i = 2; i < 9; i++){
+			
+			// debug purpose
 			while(calibButton.isEnabled() == true){
 				System.out.print("SP: " + i + "");
 			}
+			
+			// display instructions here
+			
+			// draw the source of the received IR
 			int[][] temp = cal.getCalibPoints(calibButton);
 			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
 			
@@ -911,9 +968,8 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		calibButton.setEnabled(false);
 		calibButton.setText("DONE");
 		
-		
-		
 		cal.generateBoundaries(calibMatrix);
+		// remove drawn calibration points
 		clearViews();
 	
 	}
