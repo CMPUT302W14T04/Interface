@@ -41,14 +41,33 @@ import wiiusej.wiiusejevents.wiiuseapievents.StatusEvent;
 public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		WiimoteListener {
 
+	//declaration of variables
 	private static final long serialVersionUID = 1L;
 	private static Wiimote wiimote;
 	private static Wiimote wiimote2;
 	private static Calibrations cal = new Calibrations();
 	private static boolean isCalibrating = false;
+	private static int[][] calibMatrix = new int[9][2];
+	
+	//GUI-related declarations
+	
+	//GUI: container panels
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel irCombinedPanel;
+    private javax.swing.JPanel irPadPanel;
+    
+    //GUI: draw panels
+    private static javax.swing.JPanel irViewPanel1;
+    private static javax.swing.JPanel irViewPanel2;
+    private static javax.swing.JPanel irCombined;    
+
+    //GUI: buttons
+    private static javax.swing.JButton calibButton;
+    private javax.swing.JButton LRButton;
+    private javax.swing.JButton clearDrawingButton;
 	
 	/**
-	 * default constructor
+	 * default constructor if no wiimotes are present
 	 */
 	public WiiuseJGuiTest() {
 		initComponents();
@@ -156,7 +175,9 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		clearViews();
 	}
 
-
+	/**
+	 * Constructs the GUI
+	 */
     private void initComponents() {
         
         // IR dot panel to show what an individual wiimote picks up
@@ -177,11 +198,6 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
         clearDrawingButton = new javax.swing.JButton();
         calibButton = new javax.swing.JButton();
         LRButton = new javax.swing.JButton();
-        
-        showExpansionWiimoteButton = new javax.swing.JButton();
-        showExpansionWiimoteButton.setEnabled(false);
-
-        messageText = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("IR Paint");
@@ -343,22 +359,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
 
-    private javax.swing.JPanel buttonPanel;
 
-    private static javax.swing.JPanel irViewPanel1;
-    private static javax.swing.JPanel irViewPanel2;
-    private static javax.swing.JPanel irCombined;    
-
-    private static javax.swing.JButton calibButton;
-    private javax.swing.JButton LRButton;
-    private javax.swing.JPanel irPadPanel;
-
-    private javax.swing.JLabel messageText;
-
-    private javax.swing.JPanel irCombinedPanel;
-     
-    private javax.swing.JButton showExpansionWiimoteButton;
-    private javax.swing.JButton clearDrawingButton;
 
 	public static void drawCombine(int x, int y, int lastX, int lastY){	
 		int[] adjust = cal.calculateOffsets(x,y);
@@ -370,23 +371,21 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	// James's calibration routine
 	public static void calibrate(){
 		isCalibrating = true;
-		int[][] calibMatrix = new int[9][2];
-		
-		//calibration for the first points
-		
+			
 		//enable this following block for real usage
 		//int[][] coords = cal.eventFilter(2);
-		
+			
 		//for development purposes only; disable this block for real usage
 		int[][] coords = cal.getFakeCalibPoints(calibButton, 1);
+
 		
 		printCaliState();
 		cal.setF(8f, 5.5f);		
 		cal.setDefaultFloor((coords[0][1] + coords[1][1])/2);
 		cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote, wiimote2);
 		
-		// clears what's drawn so far if calibration is required
-		clearViews();
+		// what does this clearView do?
+		//clearViews();
 		calibMatrix[0] = cal.calculateOffsets(coords[0][0], coords[1][0]);
 		calibButton.setEnabled(true);
 		calibButton.setText("Capture Next Point");
@@ -395,18 +394,21 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		// calibration routine for points 2 to 8, the rest of the points
 		for(int i = 2; i < 9; i++){
 			
+			// insert calibration instruction here for points 2-8
+				
 			// draw the source of the received IR
-			
+				
 			//enable this following block for real usage
 			//int[][] temp = cal.getCalibPoints(calibButton);
-			//calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
-			
+				
 			//for development purposes only; disable this block for real usage
-			printCaliState();
 			int[][] temp = cal.getFakeCalibPoints(calibButton, i-1);
-			printCaliState();
 			
+			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
+				
 			((IRCombined) irCombined).drawCalib(calibMatrix[i - 1]);
+			
+
 		}
 		
 		calibButton.setEnabled(true);
@@ -415,10 +417,18 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		
 		cal.generateBoundaries(calibMatrix);
 		// remove drawn calibration points
+		clearViews();
 		printCaliState();
 	
 	}
 	
+	public static void firstCalibrate() {
+		
+	}
+	
+	/**
+	 * Debug function; should be removed from final product
+	 */
 	public static void printCaliState() {
 		System.out.println("isCalibrating state: "+isCalibrating);
 		System.out.println("CaliButton state: "+calibButton.isEnabled());

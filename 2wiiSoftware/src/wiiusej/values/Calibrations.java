@@ -44,6 +44,8 @@ public class Calibrations {
 	
 	public float width = 8.5f;
 	public float height = 5.5f;
+	
+	
 	public int[][] eventFilter(int numWii){
 		int[][] coords = new int[numWii][2];
 		
