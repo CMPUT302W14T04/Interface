@@ -350,12 +350,29 @@ public int[] offSetFunction(int x, int y){
 	
 }
 
-
+/**
+ * part of an awkward state machine to grab coordinate points
+ */
 public int[][] getCalibPoints(javax.swing.JButton state) {
 	int[][] coords;
 	coords = eventFilter(2);
 	state.setEnabled(true);
-	state.setText("Capture");
+	state.setText("Capture Next Point");
+	return coords;
+}
+
+/**
+ * fakes the getCalibPoints function without wiimote to get real coordinates
+ * using 8 nonsense points
+ */
+public int[][] getFakeCalibPoints(javax.swing.JButton state, int i) {
+	int[][] coords = new int[2][2];
+	coords[0][0] = 100*i;
+	coords[0][1] = 100*i;
+	coords[1][0] = 100*i;
+	coords[1][1] = 100*i;
+	state.setEnabled(true);
+	state.setText("Capture Next Point");
 	return coords;
 }
 
