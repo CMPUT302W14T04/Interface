@@ -22,10 +22,17 @@ public class Calibrations {
 	private final EventListenerList listeners = new EventListenerList();
 	private AtomicBoolean running = new AtomicBoolean(false);
 	
-	private float[] ul = new float[]{-1, 1024};
-	private float[] ur = new float[]{-1, -1};
-	private float[] ll = new float[]{1024, 1024};
-	private float[] lr = new float[]{1024, -1};
+	private float[] ul = new float[4];
+	private float[] ur = new float[4];
+	private float[] ll = new float[4];
+	private float[] lr = new float[4];
+	
+	private float[] uc = new float[4];
+	private float[] lc = new float[4];
+	private float[] cl = new float[4];
+	private float[] cr = new float[4];
+	
+	private float[] cc = new float[4];
 	
 	boolean useOffset = false;
 	
@@ -43,7 +50,8 @@ public class Calibrations {
 	
 	private int defaultFloor;
 	
-	private static int flip = 1;
+	private static int flip = 2;
+	private static int[] flipArray = new int[4];
 	public boolean leftSide = true;
 	
 	
@@ -83,10 +91,10 @@ public class Calibrations {
 										+ evt);
 					}
 				}
-				if(getX1() == -1 || getX2() == -1 || getX3() == -1 || getX4() == -1){
+				if(getX1() == -1 && getX2() == -1 && getX3() == -1 && getX4() == -1){
 					stepSwitch = false;					
 				}
-				if(getX1() == 1023 || getX2() == 1023 || getX3() == 1023 || getX4() == 1023){
+				if(getX1() == 1023 && getX2() == 1023 && getX3() == 1023 && getX4() == 1023){
 					stepSwitch = false;					
 				}
 				gather.clearEvents();
@@ -202,6 +210,28 @@ public class Calibrations {
 		return Y4;
 	}
 	
+	public int[] quadrantFunction(int x, int y, int q){
+//		if(q == 1){
+//			x = x / 2;
+//			y = (y / 2) + 512;
+//		} else if(q == 2){
+//			x = (x / 2) + 512;
+//			y = (y / 2) + 512;
+//		} else if(q == 3){
+//			x = x / 2;
+//			y = (y / 2) ;
+//		} else if(q == 4){
+//			x = (x / 2) + 512;
+//			y = (y / 2) ;
+//		}
+		
+		int[] out = new int[3];
+		out[0] = x;
+		out[1] = y;
+		out[2] = q;
+		return out;
+	}
+	
 	public static void setCurrentArea(int x, int y, int id) {
 		remotePress = id;
 		if(id == 1){
@@ -235,9 +265,9 @@ public void spatializeWiiMotes4x(Wiimote wiimote, Wiimote wiimote2, Wiimote wiim
 		calibButton.setEnabled(true);
 		calibButton.setText("Remote 1");
 		for(int i = 0; i < 4; i++){
-			//System.out.print("Wiimote: " + (i + 1) + "");
+			
 			while(calibButton.isEnabled() == true){
-				System.out.print("Wiimote: " + (i + 1) + "\n");
+				System.out.print("."); //Wiimote: " + (i + 1) + "\n");
 			}
 			int temp = getWiiOrder(calibButton, i + 2);
 			
@@ -251,19 +281,22 @@ public void spatializeWiiMotes4x(Wiimote wiimote, Wiimote wiimote2, Wiimote wiim
 			
 			if(temp == 1){
 				wiimote.setLeds(led[0],led[1],led[2],led[3]);
-				//wiimote.setId(i+1);			
+				flipArray[i] = 1;	
 			} else if (temp == 2) {
 				wiimote2.setLeds(led[0],led[1],led[2],led[3]);
-				//wiimote2.setId(i+1);	
+				flipArray[i] = 2;
 			} else if (temp == 3) {
 				wiimote3.setLeds(led[0],led[1],led[2],led[3]);
-				//wiimote3.setId(i+1);	
+				flipArray[i] = 3;	
 			} else if (temp == 4) {
 				wiimote4.setLeds(led[0],led[1],led[2],led[3]);
-				//wiimote4.setId(i+1);	
+				flipArray[i] = 4;
 			}
 		
-		}		
+		}
+		for(int i = 0; i < 4;i++){
+			System.out.print("FLIPARRAY" + i + " - " + flipArray[i] + "\n");
+		}
 	}
 
 public int getWiiOrder(javax.swing.JButton state, int remote) {
@@ -277,6 +310,39 @@ public int getWiiOrder(javax.swing.JButton state, int remote) {
 	}
 	return press;
 }
+
+public static int[] grabQuad(int a, int b, int c, int d, int q){
+	int x = -1;
+	int y = -1;
+	int[] coordArray = new int[]{a,b,c,d};
+	int[] outArray = new int[4];
+	for(int i = 0; i < 4; i++){
+		int index = flipArray[i];
+		int value = coordArray[index - 1];
+		outArray[i] = value;
+	}
+	if(q == 1){
+		y = outArray[2];
+		x = outArray[3];
+	} else if(q == 2){
+		y = outArray[2];
+		x = outArray[4];
+	} else if(q == 3){
+		y = outArray[1];
+		x = outArray[3];
+		
+
+	} else if(q == 4){
+		y = outArray[1];
+		x = outArray[4];
+	}
+	int[] out = new int[2];
+	out[0] = x;
+	out[1] = y;
+	return out;
+}
+
+
 
 public int[] calculateOffsets(int x, int y){
 	
@@ -469,7 +535,7 @@ public int[][] getCalibPoints(javax.swing.JButton state, int remote) {
 	int[][] coords;
 	coords = coordfilter(4);
 	state.setEnabled(true);
-	state.setText("Point" + remote);
+	state.setText("Point " + (remote + 1));
 	return coords;
 }
 
@@ -495,13 +561,49 @@ public void generateBoundaries(int[][] calibMatrix) {
 //	}
 	if(leftSide == true){
 		lr[0] = calibMatrix[0][0];
-		lr[1] = 1024 - calibMatrix[0][1];
+		lr[1] = calibMatrix[0][1];
+		lr[2] = 1024 - calibMatrix[0][2];
+		lr[3] = 1024 - calibMatrix[0][3];
+		
+		lc[0] = calibMatrix[1][0];
+		lc[1] = calibMatrix[1][1];
+		lc[2] = 1024 - calibMatrix[1][2];
+		lc[3] = 1024 - calibMatrix[1][3];
+		
 		ll[0] = calibMatrix[2][0];
-		ll[1] = 1024 - calibMatrix[2][1];
+		ll[1] = calibMatrix[2][1];
+		ll[2] = 1024 - calibMatrix[2][2];
+		ll[3] = 1024 - calibMatrix[2][3];
+		
+		cl[0] = calibMatrix[3][0];
+		cl[1] = calibMatrix[3][1];
+		cl[2] = 1024 - calibMatrix[3][2];
+		cl[3] = 1024 - calibMatrix[3][3];
+		
 		ul[0] = calibMatrix[4][0];
-		ul[1] = 1024 - calibMatrix[4][1];
+		ul[1] = calibMatrix[4][1];
+		ul[2] = 1024 - calibMatrix[4][2];
+		ul[3] = 1024 - calibMatrix[4][3];
+		
+		uc[0] = calibMatrix[5][0];
+		uc[1] = calibMatrix[5][1];
+		uc[2] = 1024 - calibMatrix[5][2];
+		uc[3] = 1024 - calibMatrix[5][3];
+		
 		ur[0] = calibMatrix[6][0];
-		ur[1] = 1024 - calibMatrix[6][1];
+		ur[1] = calibMatrix[6][1];
+		ur[2] = 1024 - calibMatrix[6][2];
+		ur[3] = 1024 - calibMatrix[6][3];
+		
+		cr[0] = calibMatrix[7][0];
+		cr[1] = calibMatrix[7][1];
+		cr[2] = 1024 - calibMatrix[7][2];
+		cr[3] = 1024 - calibMatrix[7][3];
+		
+		cc[0] = calibMatrix[8][0];
+		cc[1] = calibMatrix[8][1];
+		cc[2] = 1024 - calibMatrix[8][2];
+		cc[3] = 1024 - calibMatrix[8][3];
 	} else { 
 		lr[0] = 1024 - calibMatrix[0][0];
 		lr[1] = 1024 - calibMatrix[0][1];

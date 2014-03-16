@@ -136,9 +136,15 @@ public class IRCombined extends javax.swing.JPanel {
 				
 				if ((xx - xx2) < 1000){
 					if((yy-yy2) < 1000){
+						
+						g2.draw(shape);
+						g2.setPaint(color);
+						g2.fill(shape);
+						
+						
 						g2.setStroke(new BasicStroke(1));
 						g2.setPaint(Color.BLACK);
-						g2.draw(new Line2D.Double(xx2 - xx,yy2 - yy,0 ,0));				
+						//g2.draw(new Line2D.Double(xx2 - xx,yy2 - yy,0 ,0));				
 					}
 				}
 				

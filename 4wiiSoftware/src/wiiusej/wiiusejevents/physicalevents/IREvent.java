@@ -327,7 +327,7 @@ public class IREvent extends GenericEvent {
 		this.id = id;
 	}
 	
-//	public int getIntensity(){
-//		return this.IRPoints[0].getSize();
-//	}
+	public int getIntensity(){
+		return this.IRPoints[0].getSize();
+	}
 }

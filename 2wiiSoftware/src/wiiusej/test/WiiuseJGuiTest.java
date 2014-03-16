@@ -649,7 +649,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+            .addComponent(leftPanel, 10, 10, Short.MAX_VALUE)
             .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
             //.addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
         );
@@ -888,7 +888,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	}
 	
 	public static void calibrate(){
-		int[][] calibMatrix = new int[9][2];
+		int[][] calibMatrix = new int[8][2];
 		int[][] coords = cal.eventFilter(2);
 		cal.setF(8f, 5.5f);		
 		cal.setDefaultFloor((coords[0][1] + coords[1][1])/2);
@@ -898,16 +898,16 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		calibButton.setEnabled(true);
 		calibButton.setText("Capture");
 		((IRCombined) irCombined).drawCalib(calibMatrix[0]);
-		for(int i = 2; i < 9; i++){
-			while(calibButton.isEnabled() == true){
-				System.out.print("SP: " + i + "");
-			}
-			int[][] temp = cal.getCalibPoints(calibButton);
-			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
-			
-			((IRCombined) irCombined).drawCalib(calibMatrix[i - 1]);
-		}
-		
+//		for(int i = 2; i < 9; i++){
+//			while(calibButton.isEnabled() == true){
+//				System.out.print("SP: " + i + "");
+//			}
+//			int[][] temp = cal.getCalibPoints(calibButton);
+//			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
+//			
+//			((IRCombined) irCombined).drawCalib(calibMatrix[i - 1]);
+//		}
+//		
 		calibButton.setEnabled(false);
 		calibButton.setText("DONE");
 		

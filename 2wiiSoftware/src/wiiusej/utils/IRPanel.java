@@ -158,7 +158,7 @@ public class IRPanel extends javax.swing.JPanel implements WiimoteListener {
 	}
 
 	public void onIrEvent(IREvent arg0) {
-		//System.out.print("" + arg0.getIntensity() + "\n");
+		System.out.print("" + arg0.getIntensity() + "\n");
 		// transfer points
 		id = arg0.getId();
 		wiiusej.values.IRSource[] points = arg0.getIRPoints();

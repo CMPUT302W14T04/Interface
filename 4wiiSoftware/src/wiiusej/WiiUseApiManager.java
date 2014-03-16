@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.EventListenerList;
 
 import wiiusej.test.WiiuseJGuiTest;
+import wiiusej.values.Calibrations;
 import wiiusej.wiiusejevents.utils.EventsGatherer;
 import wiiusej.wiiusejevents.utils.WiiUseApiListener;
 import wiiusej.wiiusejevents.wiiuseapievents.WiiUseApiEvent;
@@ -620,10 +621,16 @@ public class WiiUseApiManager extends Thread {
 											+ evt);
 						}
 					}
-					if(getX1() != -1){
+					if(getX1() != -1 || getX2() != -1){
 						
-						if(getX2() != -1){
-							
+						if(getX3() != -1 || getX4() != -1){
+							int[] coords;
+							if(WiiuseJGuiTest.isComplete() == true){
+								coords = Calibrations.grabQuad(getX1(), getX2(), getX3(), getX4(), 1);
+							} else {
+								
+								coords = new int[]{getX1(), getX2()};
+							}
 							WiiuseJGuiTest.drawCombine(getX1(), getX2(), lastX, lastY);
 							lastX = getX1();
 							lastY = getX2();
@@ -662,6 +669,22 @@ public class WiiUseApiManager extends Thread {
 
 	public static int getY2() {
 		return Y2;
+	}
+	
+	public static int getX3() {
+		return X3;
+	}
+
+	public static int getX4() {
+		return X4;
+	}
+
+	public static int getY3() {
+		return Y3;
+	}
+
+	public static int getY4() {
+		return Y4;
 	}
 
 	/**

@@ -64,7 +64,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	private JFrame expansionFrame = null;
 	private boolean isFirstStatusGot = false;
 	private static Calibrations cal = new Calibrations();
-	
+	private static boolean complete = false;
 	
 	
 	
@@ -971,12 +971,10 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		cal.spatializeWiiMotes4x(wiimote, wiimote2, wiimote3, wiimote4, calibButton);
 		clearViews();
 		//calibMatrix[0] = cal.calculateOffsets(coords[0][0], coords[1][0]);
-		calibButton.setEnabled(true);
-		calibButton.setText("Capture");
-		((IRCombined) irCombined).drawCalib(calibMatrix[0]);
+		setComplete(true);
 		for(int i = 1; i < 10; i++){
 			while(calibButton.isEnabled() == true){
-				System.out.print("Point: " + i + "\n");
+				//System.out.print("Point: " + i + "\n");
 			}
 			int[][] temp = cal.getCalibPoints(calibButton, i);
 			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
@@ -989,9 +987,17 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		
 		
 		
-		cal.generateBoundaries(calibMatrix);
+		//cal.generateBoundaries(calibMatrix);
 		clearViews();
-	
+		
+	}
+
+	public static boolean isComplete() {
+		return complete;
+	}
+
+	public static void setComplete(boolean completeIn) {
+		complete = completeIn;
 	}
 	
 	
