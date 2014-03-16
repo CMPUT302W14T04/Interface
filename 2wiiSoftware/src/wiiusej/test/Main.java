@@ -18,7 +18,6 @@ package wiiusej.test;
 
 import wiiusej.WiiUseApiManager;
 import wiiusej.Wiimote;
-import wiiusej.values.Calibrations;
 
 /**
  * Main Class to launch WiiuseJ GUI Test.
@@ -44,6 +43,7 @@ public class Main {
 		}
 		gui.setDefaultCloseOperation(WiiuseJGuiTest.EXIT_ON_CLOSE);
 		gui.setVisible(true);
+		gui.setResizable(false);
 	}
 
 }

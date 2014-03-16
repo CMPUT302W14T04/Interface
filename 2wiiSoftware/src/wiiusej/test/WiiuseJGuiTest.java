@@ -16,9 +16,23 @@
  */
 package wiiusej.test;
 
-import java.awt.Robot;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.WindowConstants;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 import wiiusej.Wiimote;
 import wiiusej.utils.IRCombined;
@@ -32,74 +46,95 @@ import wiiusej.wiiusejevents.utils.WiimoteListener;
 import wiiusej.wiiusejevents.wiiuseapievents.DisconnectionEvent;
 import wiiusej.wiiusejevents.wiiuseapievents.StatusEvent;
 
-/**
- * Gui class to test WiiuseJ.
- * 
- * @author guiguito
- * @param <cState>
- */
 
-public class WiiuseJGuiTest extends javax.swing.JFrame implements
-		WiimoteListener {
+public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 
 	// declaration of variables
 	private static final long serialVersionUID = 1L;
+	
 	private static Wiimote wiimote;
 	private static Wiimote wiimote2;
 	private static Calibrations cal = new Calibrations();
 	private static boolean isCalibrating = false;
 	private static int[][] calibMatrix = new int[9][2];
 
-	// GUI-related declarations
+	// GUI-related variables
+	static String title = "IR Paint";
+	static final Color black = Color.black;
+	static final Color red = Color.red;
+	static final Color bluegreen = new Color(0, 153, 153);
+	
+	static final Font Tahoma = new Font("Tahoma",0,16);
+	static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 	// GUI: container panels
-	private javax.swing.JPanel buttonPanel;
-	private javax.swing.JPanel irCombinedPanel;
-	private javax.swing.JPanel irPadPanel;
+	private JPanel buttonPanel;
+	private JPanel irCombinedPanel;
+	private JPanel irPadPanel;
 
 	// GUI: draw panels
-	private static javax.swing.JPanel irViewPanel1;
-	private static javax.swing.JPanel irViewPanel2;
-	private static javax.swing.JPanel irCombined;
+	private static JPanel irViewPanel1;
+	private static JPanel irViewPanel2;
+	private static JPanel irCombined;
 
 	// GUI: buttons
-	private static javax.swing.JButton calibButton;
-	private javax.swing.JButton LRButton;
-	private javax.swing.JButton clearDrawingButton;
+	private static JButton calibButton;
+	private JButton LRButton;
+	private JButton clearDrawingButton;
 
-	// possible states for which point we are calibrating and where the wiimotes
-	// are
+	/**
+	 * possible states for which point we are calibrating and where the wiimotes
+	 * are
+	 */
 	protected enum cState {
 
-		RIGHTBM(7, "midpoint on the bottom edge", null), RIGHTBR(6,
-				"bottom right", RIGHTBM), RIGHTMR(5,
-				"midpoint on the right edge", RIGHTBR), RIGHTTR(4, "top right",
-				RIGHTMR), RIGHTTM(3, "midpoint on the top edge", RIGHTTR), RIGHTTL(
-				2, "top left", RIGHTTM), RIGHTML(1,
-				"midpoint of the left edge", RIGHTTL), RIGHTBL(0,
-				"bottom left", RIGHTML),
+		RIGHTBM(7, "midpoint on the bottom edge", null), 
+		RIGHTBR(6, "bottom right", RIGHTBM), 
+		RIGHTMR(5, "midpoint on the right edge", RIGHTBR), 
+		RIGHTTR(4, "top right", RIGHTMR), 
+		RIGHTTM(3, "midpoint on the top edge", RIGHTTR), 
+		RIGHTTL(2, "top left", RIGHTTM), 
+		RIGHTML(1, "midpoint of the left edge", RIGHTTL), 
+		RIGHTBL(0, "bottom left", RIGHTML),
 
-		LEFTMR(7, "midpoint of the right edge", null), LEFTTR(6, "top right",
-				LEFTMR), LEFTTM(5, "midpoint of the top edge", LEFTTR), LEFTTL(
-				4, "top left", LEFTTM), LEFTML(3, "midpoint of the left edge",
-				LEFTTL), LEFTBL(2, "bottom left", LEFTML), LEFTBM(1,
-				"midpoint of the bottom edge", LEFTBL), LEFTBR(0,
-				"bottom right", LEFTBM);
+		LEFTMR(7, "midpoint of the right edge", null), 
+		LEFTTR(6, "top right", LEFTMR), 
+		LEFTTM(5, "midpoint of the top edge", LEFTTR), 
+		LEFTTL(4, "top left", LEFTTM), 
+		LEFTML(3, "midpoint of the left edge",LEFTTL), 
+		LEFTBL(2, "bottom left", LEFTML), 
+		LEFTBM(1, "midpoint of the bottom edge", LEFTBL), 
+		LEFTBR(0, "bottom right", LEFTBM);
 
 		int order;
 		String position;
 		cState nextPosition;
+		
+		/*
+		 * Format of states:
+		 * Order, descriptive text, next point
+		 * 
+		 * Order: numerical order for which step we are on in calibration
+		 * Descriptive Text: text prepared for when we insert directions
+		 * Next point: which is the next point to be calibrated
+		 */
 
 		cState(int i, String p, cState next) {
-			order = i; // order of calibration
-			position = p; // position relative to the map
-			nextPosition = next; // next point to calibrate
+			order = i; 
+			position = p; 
+			nextPosition = next; 
 		}
-		
+
 		cState getNext() {
 			return nextPosition;
 		}
 
+
+		/**
+		 * Calibrate function that is called when calibration button is pressed
+		 * Function changes depending on state of which point is to be calibrated
+		 * and where the wiimotes are (left vs right)
+		 */
 		void calibrate() {
 			isCalibrating = true;
 
@@ -125,7 +160,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 				calibButton.setEnabled(true);
 				calibButton.setText("Capture Next Point");
 				((IRCombined) irCombined).drawCalib(calibMatrix[0]);
-				
+
 			}
 
 			else {
@@ -198,18 +233,12 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		}
 	}
 
-	/**
-	 * Clear all views
-	 */
 	private static void clearViews() {
 		((IRPanel) irViewPanel1).clearView();
 		((IRPanel) irViewPanel2).clearView();
 		((IRCombined) irCombined).clearView();
 	}
 
-	/**
-	 * Unregister all listeners.
-	 */
 	private void unregisterListeners() {
 		wiimote.removeWiiMoteEventListeners((IRPanel) irViewPanel1);
 		wiimote2.removeWiiMoteEventListeners((IRPanel) irViewPanel2);
@@ -282,93 +311,80 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		// IR dot panel to show what an individual wiimote picks up
 		irViewPanel1 = new IRPanel();
 		irViewPanel2 = new IRPanel();
-		// IR panel to draw the combined coordinates from the individual
-		// irViewPanel
+		// draw the combined coordinates; the "real picture"
 		irCombined = new IRCombined();
 
 		// this is the panel containing irCombined, formerly leftpanel
-		irCombinedPanel = new javax.swing.JPanel();
-
+		irCombinedPanel = new JPanel();
 		// this is the panel containing individual, formerly rightpanel
-		irPadPanel = new javax.swing.JPanel();
+		irPadPanel = new JPanel();
+		// this is the panel containing the 3 buttons
+		buttonPanel = new JPanel();
 
-		// this is the panel containing the 3 buttons, formerly buttonPanel
-		buttonPanel = new javax.swing.JPanel();
+		clearDrawingButton = new JButton();
+		calibButton = new JButton();
+		LRButton = new JButton();
 
-		clearDrawingButton = new javax.swing.JButton();
-		calibButton = new javax.swing.JButton();
-		LRButton = new javax.swing.JButton();
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setTitle(title);
+		setName(title); // NOI18N
 
-		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-		setTitle("IR Paint");
-		setName("IR Paint"); // NOI18N
+		irPadPanel.setBorder(BorderFactory.createEtchedBorder());
 
-		irPadPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-		irViewPanel1.setBackground(new java.awt.Color(0, 0, 0));
-		irViewPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(
-				new javax.swing.border.LineBorder(new java.awt.Color(0, 153,
-						153), 2, true), "IR: Remote #1",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION,
-				new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(255, 0,
-						51)));
+		irViewPanel1.setBackground(black);
+		irViewPanel1.setBorder(BorderFactory.createTitledBorder(new LineBorder(
+				bluegreen, 2, true), "IR: Remote #1",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, Tahoma, red));
 		irViewPanel1.setToolTipText("IREvent - Remote 1");
-		javax.swing.GroupLayout irViewPanelLayout1 = new javax.swing.GroupLayout(
-				irViewPanel1);
+		GroupLayout irViewPanelLayout1 = new GroupLayout(irViewPanel1);
 		irViewPanel1.setLayout(irViewPanelLayout1);
 
-		irViewPanel2.setBackground(new java.awt.Color(0, 0, 0));
-		irViewPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(
-				new javax.swing.border.LineBorder(new java.awt.Color(0, 153,
-						153), 2, true), "IR: Remote #2",
-				javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-				javax.swing.border.TitledBorder.DEFAULT_POSITION,
-				new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(255, 0,
-						51)));
+		irViewPanel2.setBackground(black);
+		irViewPanel2.setBorder(BorderFactory.createTitledBorder(new LineBorder(
+				bluegreen, 2, true), "IR: Remote #2",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, Tahoma, red));
 		irViewPanel2.setToolTipText("IREvent - Remote 2");
-		javax.swing.GroupLayout irViewPanelLayout2 = new javax.swing.GroupLayout(
-				irViewPanel2);
+		GroupLayout irViewPanelLayout2 = new GroupLayout(irViewPanel2);
 		irViewPanel2.setLayout(irViewPanelLayout2);
 
-		irCombined.setBackground(new java.awt.Color(0, 0, 0));
-		irCombined.setBorder(javax.swing.BorderFactory
-				.createTitledBorder(new javax.swing.border.LineBorder(
-						new java.awt.Color(0, 0, 0), 2, true), "IR: Combined",
-						javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
-						javax.swing.border.TitledBorder.DEFAULT_POSITION,
-						new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(
-								0, 0, 0)));
+		irCombined.setBackground(black);
+		irCombined.setBorder(BorderFactory.createTitledBorder(new LineBorder(
+				black, 2, true), "IR: Combined",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, Tahoma, black));
 		irCombined.setToolTipText("IREvent - Combined View");
-		javax.swing.GroupLayout irCombinedLayout = new javax.swing.GroupLayout(
-				irCombined);
+		GroupLayout irCombinedLayout = new GroupLayout(irCombined);
 		irCombined.setLayout(irCombinedLayout);
-
-		irViewPanelLayout1.setHorizontalGroup(irViewPanelLayout1
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGap(0, 272, Short.MAX_VALUE));
-		irViewPanelLayout1.setVerticalGroup(irViewPanelLayout1
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGap(0, 299, Short.MAX_VALUE));
-
-		irViewPanelLayout2.setHorizontalGroup(irViewPanelLayout2
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGap(0, 272, Short.MAX_VALUE));
-		irViewPanelLayout2.setVerticalGroup(irViewPanelLayout2
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGap(0, 299, Short.MAX_VALUE));
+		
+        irViewPanelLayout1.setHorizontalGroup(
+                irViewPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 272, Short.MAX_VALUE)
+            );
+            irViewPanelLayout1.setVerticalGroup(
+                irViewPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 299, Short.MAX_VALUE)
+            );
+            
+       irViewPanelLayout2.setHorizontalGroup(
+            irViewPanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 272, Short.MAX_VALUE)
+            );
+            irViewPanelLayout2.setVerticalGroup(
+            irViewPanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 299, Short.MAX_VALUE)
+            );
 
 		irCombinedLayout.setHorizontalGroup(irCombinedLayout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGap(0, 272, Short.MAX_VALUE));
+				.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0,
+						272, Short.MAX_VALUE));
 		irCombinedLayout.setVerticalGroup(irCombinedLayout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 299,
-				Short.MAX_VALUE));
+				GroupLayout.Alignment.LEADING).addGap(0, 299, Short.MAX_VALUE));
 
-		irCombinedPanel.setBorder(javax.swing.BorderFactory
-				.createEtchedBorder());
-		irCombinedPanel.setLayout(new javax.swing.BoxLayout(irCombinedPanel,
-				javax.swing.BoxLayout.LINE_AXIS));
+		irCombinedPanel.setBorder(BorderFactory.createEtchedBorder());
+		irCombinedPanel.setLayout(new BoxLayout(irCombinedPanel,
+				BoxLayout.LINE_AXIS));
 
 		clearDrawingButton.setText("Clear");
 		clearDrawingButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -392,89 +408,67 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 				LRButtonMousePressed(evt);
 			}
 		});
-
 		buttonPanel.add(LRButton);
 
-		javax.swing.GroupLayout irPadPanelLayout = new javax.swing.GroupLayout(
-				irPadPanel);
+		GroupLayout irPadPanelLayout = new GroupLayout(irPadPanel);
 		irPadPanel.setLayout(irPadPanelLayout);
-		irPadPanelLayout.setHorizontalGroup(irPadPanelLayout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addComponent(irViewPanel1,
-						javax.swing.GroupLayout.Alignment.TRAILING,
-						javax.swing.GroupLayout.DEFAULT_SIZE,
-						javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(irViewPanel2,
-						javax.swing.GroupLayout.Alignment.TRAILING,
-						javax.swing.GroupLayout.DEFAULT_SIZE,
-						javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(buttonPanel,
-						javax.swing.GroupLayout.Alignment.TRAILING,
-						javax.swing.GroupLayout.DEFAULT_SIZE,
-						javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+		irPadPanelLayout.setHorizontalGroup(
+				irPadPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+				.addComponent(irViewPanel1, GroupLayout.Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
+				.addComponent(irViewPanel2, GroupLayout.Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
+				.addComponent(buttonPanel, GroupLayout.Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE));
 		irPadPanelLayout.setVerticalGroup(irPadPanelLayout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addGroup(
-				javax.swing.GroupLayout.Alignment.TRAILING,
+				GroupLayout.Alignment.LEADING).addGroup(
+				GroupLayout.Alignment.TRAILING,
 				irPadPanelLayout
 						.createSequentialGroup()
-						.addComponent(buttonPanel,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
-						.addComponent(irViewPanel1,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
-						.addComponent(irViewPanel2,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								javax.swing.GroupLayout.DEFAULT_SIZE,
-								Short.MAX_VALUE)
+						.addComponent(buttonPanel, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(irViewPanel1, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(irViewPanel2, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 
 		));
 
 		irCombinedPanel.add(irCombined);
-		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(
-				getContentPane());
+		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(layout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(
-						layout.createSequentialGroup()
-								.addComponent(irPadPanel,
-										javax.swing.GroupLayout.PREFERRED_SIZE,
-										238,
-										javax.swing.GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(
-										javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(irCombinedPanel,
-										javax.swing.GroupLayout.DEFAULT_SIZE,
-										498, Short.MAX_VALUE)
-
-				)
+		layout.setHorizontalGroup(layout.createParallelGroup(
+				GroupLayout.Alignment.LEADING).addGroup(
+				layout.createSequentialGroup()
+						.addComponent(irPadPanel, GroupLayout.PREFERRED_SIZE,
+								238, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(irCombinedPanel,
+								GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE))
 
 		);
 		layout.setVerticalGroup(layout
-				.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addComponent(irPadPanel, javax.swing.GroupLayout.DEFAULT_SIZE,
-						573, Short.MAX_VALUE)
-				.addComponent(irCombinedPanel,
-						javax.swing.GroupLayout.DEFAULT_SIZE, 573,
+				.createParallelGroup(Alignment.LEADING)
+				.addComponent(irPadPanel, GroupLayout.DEFAULT_SIZE, 573,
+						Short.MAX_VALUE)
+				.addComponent(irCombinedPanel, GroupLayout.DEFAULT_SIZE, 573,
 						Short.MAX_VALUE));
 
-		java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit()
-				.getScreenSize();
 		setBounds((screenSize.width - 800) / 2, (screenSize.height - 600) / 2,
 				800, 600);
 
 	}// </editor-fold>//GEN-END:initComponents
 
-	private void clearDrawingButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_clearDrawingButtonMousePressed
+	private void clearDrawingButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_clearDrawingButtonMousePressed
 		if (clearDrawingButton.isEnabled()) {
 			clearViews();
 		}
 	}// GEN-LAST:event_clearDrawingButtonMousePressed
 
-	private void calibButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_calibButtonMousePressed
+	private void calibButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_calibButtonMousePressed
 		if (calibButton.isEnabled()) {
 			// debug statement block
 			System.out.println("Button got pressed!");
@@ -486,7 +480,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		}
 	}// GEN-LAST:event_calibButtonMousePressed
 
-	private void LRButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_LRButtonMousePressed
+	private void LRButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_LRButtonMousePressed
 		// only allow changing of left and right if we are not in the middle of
 		// a calibration
 		// changes initial starting state as well
@@ -506,6 +500,14 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 
 	}// GEN-LAST:event_LRButtonMousePressed
 
+	/**
+	 * Draws on the map panel based on calibrated results
+	 * 
+	 * @param x
+	 * @param y
+	 * @param lastX
+	 * @param lastY
+	 */
 	public static void drawCombine(int x, int y, int lastX, int lastY) {
 		int[] adjust = cal.calculateOffsets(x, y);
 		int[] adjustLast = cal.calculateOffsets(lastX, lastY);
@@ -514,15 +516,18 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 				adjustLast[0], adjustLast[1]);
 	}
 
+	/**
+	 * Sets state of calibration ready for any re-calibrating,
+	 * based on where the wiimotes are
+	 * @param s
+	 */
 	private void setState(cState s) {
 		state = s;
-		
-		// sets state properly if this is the last calibration based on LR preferences
-		if(state == null) {
-			if(cal.leftSide == true) {
+
+		if (state == null) {
+			if (cal.leftSide == true) {
 				setState(cState.LEFTBR);
-			}
-			else {
+			} else {
 				setState(cState.RIGHTBL);
 			}
 		}
