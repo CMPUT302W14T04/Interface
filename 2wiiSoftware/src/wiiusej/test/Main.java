@@ -18,7 +18,6 @@ package wiiusej.test;
 
 import wiiusej.WiiUseApiManager;
 import wiiusej.Wiimote;
-import wiiusej.values.Calibrations;
 
 /**
  * Main Class to launch WiiuseJ GUI Test.
@@ -33,8 +32,9 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		System.getProperties().put("org.apache.commons.logging.simplelog.defaultlog","fatal");
-		Wiimote[] wiimotes = WiiUseApiManager.getWiimotes(0, true);
+		Wiimote[] wiimotes = WiiUseApiManager.getWiimotes(2, true);
 		
+		//launch GUI depending on wiimote availability
 		WiiuseJGuiTest gui = null;
 		if (wiimotes.length > 0) {
 			gui = new WiiuseJGuiTest(wiimotes[0], wiimotes[1]);
@@ -43,7 +43,7 @@ public class Main {
 		}
 		gui.setDefaultCloseOperation(WiiuseJGuiTest.EXIT_ON_CLOSE);
 		gui.setVisible(true);
-		gui.calibrate();
+		gui.setResizable(false);
 	}
 
 }

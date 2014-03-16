@@ -16,26 +16,27 @@
  */
 package wiiusej.test;
 
-import java.awt.AWTException;
-import java.awt.Robot;
-import java.awt.event.InputEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.WindowConstants;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
-import wiiusej.WiiUseApiManager;
 import wiiusej.Wiimote;
-import wiiusej.utils.AccelerationPanel;
-import wiiusej.utils.AccelerationWiimoteEventPanel;
-import wiiusej.utils.ButtonsEventPanel;
-import wiiusej.utils.GForcePanel;
-import wiiusej.utils.IRPanel;
 import wiiusej.utils.IRCombined;
-import wiiusej.utils.OrientationPanel;
-import wiiusej.utils.OrientationWiimoteEventPanel;
+import wiiusej.utils.IRPanel;
 import wiiusej.values.Calibrations;
 import wiiusej.wiiusejevents.physicalevents.ExpansionEvent;
 import wiiusej.wiiusejevents.physicalevents.IREvent;
@@ -45,82 +46,163 @@ import wiiusej.wiiusejevents.utils.WiimoteListener;
 import wiiusej.wiiusejevents.wiiuseapievents.DisconnectionEvent;
 import wiiusej.wiiusejevents.wiiuseapievents.StatusEvent;
 
-/**
- * Gui class to test WiiuseJ.
- * 
- * @author guiguito
- */
-public class WiiuseJGuiTest extends javax.swing.JFrame implements
-		WiimoteListener {
 
+public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
+
+	// declaration of variables
 	private static final long serialVersionUID = 1L;
+	
 	private static Wiimote wiimote;
 	private static Wiimote wiimote2;
-	private Wiimote wiimote3;
-	private Wiimote wiimote4;
-	private Robot robot = null;
-	private boolean statusMotionRequested = false;
-	private boolean statusIRRequested = false;
-	private JFrame expansionFrame = null;
-	private boolean isFirstStatusGot = false;
 	private static Calibrations cal = new Calibrations();
+	private static boolean isCalibrating = false;
+	private static int[][] calibMatrix = new int[9][2];
+
+	// GUI-related variables
+	static String title = "IR Paint";
+	static final Color black = Color.black;
+	static final Color red = Color.red;
+	static final Color bluegreen = new Color(0, 153, 153);
 	
-	
-	
-	
-	private WindowListener buttonSetter = new WindowListener(){
-		
-		
+	static final Font Tahoma = new Font("Tahoma",0,16);
+	static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-		public void windowOpened(WindowEvent e) {
-			// nothing
-		}
+	// GUI: container panels
+	private JPanel buttonPanel;
+	private JPanel irCombinedPanel;
+	private JPanel irPadPanel;
 
-		public void windowClosing(WindowEvent e) {
-			// nothing
-		}
+	// GUI: draw panels
+	private static JPanel irViewPanel1;
+	private static JPanel irViewPanel2;
+	private static JPanel irCombined;
 
-		public void windowClosed(WindowEvent e) {
-			// nothing
-		}
-
-		public void windowIconified(WindowEvent e) {
-			// nothing
-		}
-
-		public void windowDeiconified(WindowEvent e) {
-			// nothing
-		}
-
-		// unrelated to us; comment it out
-		public void windowActivated(WindowEvent e) {
-//			showExpansionWiimoteButton.setEnabled(false);
-//                        if (expansionFrame instanceof NunchukGuiTest){
-//                            showExpansionWiimoteButton.setText("Hide Nunchuk");
-//                        }else if(expansionFrame instanceof GuitarHero3GuiTest){
-//                            showExpansionWiimoteButton.setText("Hide Guitar");
-//                        }else if(expansionFrame instanceof ClassicControllerGuiTest){
-//                            showExpansionWiimoteButton.setText("Hide Classic Controller");
-//                        }			
-		}
-
-		// unrelated to us; comment it out
-		public void windowDeactivated(WindowEvent e) {
-//			showExpansionWiimoteButton.setEnabled(true);			
-//                        if (expansionFrame instanceof NunchukGuiTest){
-//                            showExpansionWiimoteButton.setText("Show Nunchuk");
-//                        }else if(expansionFrame instanceof GuitarHero3GuiTest){
-//                            showExpansionWiimoteButton.setText("Show Guitar");
-//                        }else if(expansionFrame instanceof ClassicControllerGuiTest){
-//                            showExpansionWiimoteButton.setText("Show Classic controller");
-//                        }
-		}
-	};
-	
-
+	// GUI: buttons
+	private static JButton calibButton;
+	private JButton LRButton;
+	private JButton clearDrawingButton;
 
 	/**
-	 * default constructor
+	 * possible states for which point we are calibrating and where the wiimotes
+	 * are
+	 */
+	protected enum cState {
+
+		RIGHTBM(7, "midpoint on the bottom edge", null), 
+		RIGHTBR(6, "bottom right", RIGHTBM), 
+		RIGHTMR(5, "midpoint on the right edge", RIGHTBR), 
+		RIGHTTR(4, "top right", RIGHTMR), 
+		RIGHTTM(3, "midpoint on the top edge", RIGHTTR), 
+		RIGHTTL(2, "top left", RIGHTTM), 
+		RIGHTML(1, "midpoint of the left edge", RIGHTTL), 
+		RIGHTBL(0, "bottom left", RIGHTML),
+
+		LEFTMR(7, "midpoint of the right edge", null), 
+		LEFTTR(6, "top right", LEFTMR), 
+		LEFTTM(5, "midpoint of the top edge", LEFTTR), 
+		LEFTTL(4, "top left", LEFTTM), 
+		LEFTML(3, "midpoint of the left edge",LEFTTL), 
+		LEFTBL(2, "bottom left", LEFTML), 
+		LEFTBM(1, "midpoint of the bottom edge", LEFTBL), 
+		LEFTBR(0, "bottom right", LEFTBM);
+
+		int order;
+		String position;
+		cState nextPosition;
+		
+		/*
+		 * Format of states:
+		 * Order, descriptive text, next point
+		 * 
+		 * Order: numerical order for which step we are on in calibration
+		 * Descriptive Text: text prepared for when we insert directions
+		 * Next point: which is the next point to be calibrated
+		 */
+
+		cState(int i, String p, cState next) {
+			order = i; 
+			position = p; 
+			nextPosition = next; 
+		}
+
+		cState getNext() {
+			return nextPosition;
+		}
+
+
+		/**
+		 * Calibrate function that is called when calibration button is pressed
+		 * Function changes depending on state of which point is to be calibrated
+		 * and where the wiimotes are (left vs right)
+		 */
+		void calibrate() {
+			isCalibrating = true;
+
+			if (order == '0') {
+				// enable this following block for real usage
+				// int[][] coords = cal.eventFilter(2);
+
+				// for development purposes only; disable this block for real
+				// usage
+				int[][] coords = cal.getFakeCalibPoints(calibButton, 1);
+
+				cal.setF(8f, 5.5f);
+				cal.setDefaultFloor((coords[0][1] + coords[1][1]) / 2);
+				cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote,
+						wiimote2);
+
+				// what does this clearView do?
+				clearViews();
+
+				calibMatrix[0] = cal.calculateOffsets(coords[0][0],
+						coords[1][0]);
+
+				calibButton.setEnabled(true);
+				calibButton.setText("Capture Next Point");
+				((IRCombined) irCombined).drawCalib(calibMatrix[0]);
+
+			}
+
+			else {
+
+				// insert calibration instruction here based on Order/Position
+
+				// draw the source of the received IR
+
+				// enable this following block for real usage
+				// int[][] temp = cal.getCalibPoints(calibButton);
+
+				// for development purposes only; disable this block for real
+				// usage
+				int[][] temp = cal.getFakeCalibPoints(calibButton, order);
+
+				calibMatrix[order] = cal.calculateOffsets(temp[0][0],
+						temp[1][0]);
+
+				((IRCombined) irCombined).drawCalib(calibMatrix[order]);
+
+				// when we finish calibration
+				if (order == 7) {
+					calibButton.setEnabled(true);
+					calibButton.setText("Re-Calibrate");
+					isCalibrating = false;
+
+					cal.generateBoundaries(calibMatrix);
+					// remove drawn calibration points
+					clearViews();
+					printCaliState();
+				}
+
+			}
+		}
+
+	}
+
+	// default state assumes that wiimotes are on the left
+	private static cState state = cState.LEFTBR;
+
+	/**
+	 * default constructor if no wiimotes are present
 	 */
 	public WiiuseJGuiTest() {
 		initComponents();
@@ -133,57 +215,33 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	public WiiuseJGuiTest(Wiimote wiimote, Wiimote wiimote2) {
 		initComponents();
 		this.addWindowListener(new CloseGuiTestCleanly());
-		
+
 		// checks for wiimote connection and setups the wiimote
 		if (wiimote != null) {
-			if(wiimote2 != null){
-				
-				this.wiimote = wiimote;
-				this.wiimote2 = wiimote2;				
+			if (wiimote2 != null) {
+
+				WiiuseJGuiTest.wiimote = wiimote;
+				WiiuseJGuiTest.wiimote2 = wiimote2;
 				registerListeners();
 				initWiimote();
-				isFirstStatusGot = false;
-				getStatusButtonMousePressed(null);
 				wiimote.activateIRTRacking();
 				wiimote2.activateIRTRacking();
 				calibButton.setEnabled(false);
 				calibButton.setText("Locked");
-				
-			}	
+
+			}
 		}
 	}
 
-	/**
-	 * Clear all views
-	 */
 	private static void clearViews() {
 		((IRPanel) irViewPanel1).clearView();
 		((IRPanel) irViewPanel2).clearView();
 		((IRCombined) irCombined).clearView();
-		
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//		((ButtonsEventPanel) buttonsPanel).clearView();
-//		((OrientationPanel) motionSensingPanel).clearView();
-//		((GForcePanel) gForcePanel).clearView();
-//		((AccelerationPanel) accelerationPanel).clearView();
 	}
 
-	/**
-	 * Unregister all listeners.
-	 */
 	private void unregisterListeners() {
 		wiimote.removeWiiMoteEventListeners((IRPanel) irViewPanel1);
 		wiimote2.removeWiiMoteEventListeners((IRPanel) irViewPanel2);
-		
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//		wiimote.removeWiiMoteEventListeners((ButtonsEventPanel) buttonsPanel);
-//		wiimote.removeWiiMoteEventListeners((OrientationPanel) motionSensingPanel);
-//		wiimote.removeWiiMoteEventListeners((GForcePanel) gForcePanel);
-//		wiimote.removeWiiMoteEventListeners((AccelerationPanel) accelerationPanel);
 		wiimote.removeWiiMoteEventListeners(this);
 	}
 
@@ -194,786 +252,295 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 		wiimote.setSensorBarBelowScreen();
 	}
 
-
 	private void registerListeners() {
 		wiimote.addWiiMoteEventListeners((IRPanel) irViewPanel1);
 		wiimote2.addWiiMoteEventListeners((IRPanel) irViewPanel2);
-		
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//		wiimote.addWiiMoteEventListeners((ButtonsEventPanel) buttonsPanel);
-//		wiimote.addWiiMoteEventListeners((OrientationPanel) motionSensingPanel);
-//		wiimote.addWiiMoteEventListeners((GForcePanel) gForcePanel);
-//		wiimote.addWiiMoteEventListeners((AccelerationPanel) accelerationPanel);
 		wiimote.addWiiMoteEventListeners(this);
 
 	}
 
+	/**
+	 * Required function due to inheritance
+	 */
 	public void onButtonsEvent(WiimoteButtonsEvent arg0) {
-		
-		if (robot != null) {
-			if (arg0.isButtonAPressed()) {
-				robot.mousePress(InputEvent.BUTTON1_MASK);
-			}
-			if (arg0.isButtonBPressed()) {
-				robot.mousePress(InputEvent.BUTTON2_MASK);
-
-			}
-			if (arg0.isButtonOnePressed()) {
-				robot.mousePress(InputEvent.BUTTON3_MASK);
-
-			}
-			if (arg0.isButtonAJustReleased()) {
-				robot.mouseRelease(InputEvent.BUTTON1_MASK);
-
-			}
-			if (arg0.isButtonBJustReleased()) {
-				robot.mouseRelease(InputEvent.BUTTON2_MASK);
-
-			}
-			if (arg0.isButtonOneJustReleased()) {
-				robot.mouseRelease(InputEvent.BUTTON3_MASK);
-
-			}
-			if (arg0.isButtonUpPressed()) {// mouse wheel up
-				robot.mouseWheel(-1);
-			}
-			if (arg0.isButtonDownPressed()) {// mouse wheel down
-				robot.mouseWheel(1);
-			}
-
-			if (arg0.isButtonTwoPressed()) {// stop mouse control
-				mouseIRControlButtonMousePressed(null);
-			}
-		}
+		// nothing
 	}
 
+	/**
+	 * Required function due to inheritance Note: this is NOT the same onIrEvent
+	 * used in IRCombine to draw later on
+	 */
 	public void onIrEvent(IREvent arg0) {
-		if (robot != null) {// if mouse control activated
-			robot.mouseMove(arg0.getX(), arg0.getY());
-		}
-		if (statusIRRequested) {
-			xResolutionTextField.setText("" + arg0.getXVRes());
-			yResolutionTextField.setText("" + arg0.getYVRes());
-			statusIRRequested = false;
-		}
+		// nothing
 	}
 
+	/**
+	 * Required function due to inheritance
+	 */
 	public void onMotionSensingEvent(MotionSensingEvent arg0) {
-		if (statusMotionRequested) {// Status requested
-			accelerationThresholdTextField.setText(""
-					+ arg0.getAccelerationThreshold());
-			orientationThresholdTextField.setText(""
-					+ arg0.getOrientationThreshold());
-			alphaSmoothingTextField.setText("" + arg0.getAlphaSmoothing());
-			statusMotionRequested = false;
-		}
+		// nothing
 	}
 
+	/**
+	 * Required function due to inheritance
+	 */
 	public void onExpansionEvent(ExpansionEvent e) {
 		// nothing yet
 	}
 
+	/**
+	 * Required function due to inheritance
+	 */
 	public void onStatusEvent(StatusEvent arg0) {
-		if (!isFirstStatusGot) {			
-			if(arg0.isClassicControllerConnected()){
-                showExpansionWiimoteButton.setEnabled(true);
-				showExpansionWiimoteButton.setText("Show Classic Controller");
-				expansionFrame = new ClassicControllerGuiTest(wiimote);
-				expansionFrame
-						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-				expansionFrame.addWindowListener(buttonSetter);
-				isFirstStatusGot = true;
-                }
-                    
-			/**
-			 * Original Wiiusej components that are not used for our purposes -Eddie
-			 */
-//			else if (arg0.isNunchukConnected()) {
-//				showExpansionWiimoteButton.setEnabled(true);
-//				showExpansionWiimoteButton.setText("Show Nunchuk");
-//				expansionFrame = new NunchukGuiTest(wiimote);
-//				expansionFrame
-//						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-//				expansionFrame.addWindowListener(buttonSetter);
-//				isFirstStatusGot = true;
-//			}
-//			else if(arg0.isGuitarHeroConnected()){
-//                showExpansionWiimoteButton.setEnabled(true);
-//				showExpansionWiimoteButton.setText("Show Guitar Hero 3 Controller");
-//				expansionFrame = new GuitarHero3GuiTest(wiimote);
-//				expansionFrame
-//						.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-//				expansionFrame.addWindowListener(buttonSetter);
-//				isFirstStatusGot = true;
-//                }
-			
-		}
-		messageText.setText("Status received !");
-		batteryLevelText.setText(arg0.getBatteryLevel() + " %");
-		led1Button.setEnabled(arg0.isLed1Set());
-		led2Button.setEnabled(arg0.isLed2Set());
-		calibButton.setEnabled(arg0.isLed3Set());
-		LRButton.setEnabled(arg0.isLed4Set());
-		if (arg0.isNunchukConnected()) {
-                    ((NunchukGuiTest) expansionFrame).requestThresholdsUpdate();
-		}
-		// attachments
-		int eventType = arg0.getEventType();
-		if (eventType == StatusEvent.WIIUSE_CLASSIC_CTRL_INSERTED) {
-			expansionText.setText("Classic control connected.");
-		} else if (eventType == StatusEvent.WIIUSE_CLASSIC_CTRL_REMOVED) {
-			expansionText.setText("Classic control removed.");
-			
-			/**
-			 * Original Wiiusej components that are not used for our purposes -Eddie
-			 */
-//		} else if (eventType == StatusEvent.WIIUSE_NUNCHUK_INSERTED) {
-//			expansionText.setText("Nunchuk connected.");
-//		} else if (eventType == StatusEvent.WIIUSE_NUNCHUK_REMOVED) {
-//			expansionText.setText("Nunchuk removed.");
-//		} else if (eventType == StatusEvent.WIIUSE_GUITAR_HERO_3_CTRL_INSERTED) {
-//			expansionText.setText("Guitar Hero 3 control connected.");
-//		} else if (eventType == StatusEvent.WIIUSE_GUITAR_HERO_3_CTRL_REMOVED) {
-//			expansionText.setText("Guitar Hero 3 control removed.");
-		}
-	}
-
-	public void onDisconnectionEvent(DisconnectionEvent arg0) {
-		messageText.setText("Wiimote Disconnected !");
-		unregisterListeners();
-		clearViews();
-		isFirstStatusGot = false;
+		// nothing yet
 	}
 
 	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
+	 * What happens when wiimote disconnects
 	 */
-	// <editor-fold defaultstate="collapsed" desc="Generated
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+	public void onDisconnectionEvent(DisconnectionEvent arg0) {
+		unregisterListeners();
+		clearViews();
+	}
 
-        
-        
-        // IR dot panel to show what an individual wiimote picks up
-        irViewPanel1 = new IRPanel();
-        irViewPanel2 = new IRPanel();
-        // IR panel to draw the combined coordinates from the individual irViewPanel
-        irCombined = new IRCombined();
-        
-        // this is the panel containing irCombined, formerly leftpanel
-        irCombinedPanel = new javax.swing.JPanel();
-        
-        // this is the panel containing individual, formerly rightpanel 
-        irPadPanel = new javax.swing.JPanel();
-        
-        
-        
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//        TabbedPane1 = new javax.swing.JTabbedPane();
-//        accelerationPanel = new AccelerationWiimoteEventPanel();
-//        motionSensingPanel = new OrientationWiimoteEventPanel();
-//        gForcePanel = new wiiusej.utils.GForceWiimoteEventPanel();
-//        buttonsPanel = new ButtonsEventPanel();
-//        controlsPanel = new javax.swing.JPanel();
-        
-        // panel containing drawpad
-        
+	/**
+	 * Constructs the GUI
+	 */
+	private void initComponents() {
 
-        activateRumbleIRPanel = new javax.swing.JPanel();
+		// IR dot panel to show what an individual wiimote picks up
+		irViewPanel1 = new IRPanel();
+		irViewPanel2 = new IRPanel();
+		// draw the combined coordinates; the "real picture"
+		irCombined = new IRCombined();
 
-        toggleIRTrackingButton = new javax.swing.JButton();
+		// this is the panel containing irCombined, formerly leftpanel
+		irCombinedPanel = new JPanel();
+		// this is the panel containing individual, formerly rightpanel
+		irPadPanel = new JPanel();
+		// this is the panel containing the 3 buttons
+		buttonPanel = new JPanel();
 
+		clearDrawingButton = new JButton();
+		calibButton = new JButton();
+		LRButton = new JButton();
 
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setTitle(title);
+		setName(title); // NOI18N
 
-        setLedsPanel = new javax.swing.JPanel();
-        led1Button = new javax.swing.JButton();
-        led2Button = new javax.swing.JButton();
-        calibButton = new javax.swing.JButton();
-        LRButton = new javax.swing.JButton();
-        setLedsButton = new javax.swing.JButton();
-        
-        alphaSmoothingTextField = new javax.swing.JTextField();
-        
-        orientationThresholdTextField = new javax.swing.JTextField();
-        
-        accelerationThresholdTextField = new javax.swing.JTextField();
-        
+		irPadPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        getStatusButton = new javax.swing.JButton();
-        
-        batteryLevelText = new javax.swing.JLabel();
-        setIrSensitivyPanel = new javax.swing.JPanel();
-        setIrSensitivySpinner = new javax.swing.JSpinner();
-        setIrSensitivyButton = new javax.swing.JButton();
+		irViewPanel1.setBackground(black);
+		irViewPanel1.setBorder(BorderFactory.createTitledBorder(new LineBorder(
+				bluegreen, 2, true), "IR: Remote #1",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, Tahoma, red));
+		irViewPanel1.setToolTipText("IREvent - Remote 1");
+		GroupLayout irViewPanelLayout1 = new GroupLayout(irViewPanel1);
+		irViewPanel1.setLayout(irViewPanelLayout1);
 
+		irViewPanel2.setBackground(black);
+		irViewPanel2.setBorder(BorderFactory.createTitledBorder(new LineBorder(
+				bluegreen, 2, true), "IR: Remote #2",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, Tahoma, red));
+		irViewPanel2.setToolTipText("IREvent - Remote 2");
+		GroupLayout irViewPanelLayout2 = new GroupLayout(irViewPanel2);
+		irViewPanel2.setLayout(irViewPanelLayout2);
 
-
-        
-        setIRConfPanel = new javax.swing.JPanel();
-        toggleSensorBarPositionButton = new javax.swing.JButton();
-        toggleScreenAspectRatioButton = new javax.swing.JButton();
-
-        xResolutionTextField = new javax.swing.JTextField();
-
-        yResolutionTextField = new javax.swing.JTextField();
-  
-        
-        mouseIRControlButton = new javax.swing.JButton();
-        
-        expansionText = new javax.swing.JLabel();
-        
-        showExpansionWiimoteButton = new javax.swing.JButton();
-        showExpansionWiimoteButton.setEnabled(false);
-
-        messageText = new javax.swing.JLabel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("IR Paint");
-        setName("IR Paint"); // NOI18N
-
-        irPadPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        irViewPanel1.setBackground(new java.awt.Color(0, 0, 0));
-        irViewPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 153, 153), 2, true), "IR: Remote #1", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(255, 0, 51)));
-        irViewPanel1.setToolTipText("IREvent - Remote 1");
-
-        javax.swing.GroupLayout irViewPanelLayout1 = new javax.swing.GroupLayout(irViewPanel1);
-        irViewPanel1.setLayout(irViewPanelLayout1);
-        
-        irViewPanel2.setBackground(new java.awt.Color(0, 0, 0));
-        irViewPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 153, 153), 2, true), "IR: Remote #2", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(255, 0, 51)));
-        irViewPanel2.setToolTipText("IREvent - Remote 2");
-
-        javax.swing.GroupLayout irViewPanelLayout2 = new javax.swing.GroupLayout(irViewPanel2);
-        irViewPanel2.setLayout(irViewPanelLayout2);
-        
-        irCombined.setBackground(new java.awt.Color(0, 0, 0));
-        irCombined.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true), "IR: Combined", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 16), new java.awt.Color(0, 0, 0)));
-        irCombined.setToolTipText("IREvent - Combined View");
-
-        javax.swing.GroupLayout irCombinedLayout = new javax.swing.GroupLayout(irCombined);
-        irCombined.setLayout(irCombinedLayout);
-        
-
+		irCombined.setBackground(black);
+		irCombined.setBorder(BorderFactory.createTitledBorder(new LineBorder(
+				black, 2, true), "IR: Combined",
+				TitledBorder.DEFAULT_JUSTIFICATION,
+				TitledBorder.DEFAULT_POSITION, Tahoma, black));
+		irCombined.setToolTipText("IREvent - Combined View");
+		GroupLayout irCombinedLayout = new GroupLayout(irCombined);
+		irCombined.setLayout(irCombinedLayout);
+		
         irViewPanelLayout1.setHorizontalGroup(
-            irViewPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                irViewPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 272, Short.MAX_VALUE)
+            );
+            irViewPanelLayout1.setVerticalGroup(
+                irViewPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 299, Short.MAX_VALUE)
+            );
+            
+       irViewPanelLayout2.setHorizontalGroup(
+            irViewPanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 272, Short.MAX_VALUE)
-        );
-        irViewPanelLayout1.setVerticalGroup(
-            irViewPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            );
+            irViewPanelLayout2.setVerticalGroup(
+            irViewPanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 299, Short.MAX_VALUE)
-        );
-        
-        irViewPanelLayout2.setHorizontalGroup(
-        		irViewPanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        		.addGap(0, 272, Short.MAX_VALUE)
-        		);
-        irViewPanelLayout2.setVerticalGroup(
-        		irViewPanelLayout2.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        		.addGap(0, 299, Short.MAX_VALUE)
-        		);
-        
-        irCombinedLayout.setHorizontalGroup(
-        		irCombinedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        		.addGap(0, 272, Short.MAX_VALUE)
-        		);
-        irCombinedLayout.setVerticalGroup(
-        		irCombinedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        		.addGap(0, 299, Short.MAX_VALUE)
-        		);
+            );
 
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//        accelerationPanel.setToolTipText("MotionSensingEvent");
-//
-//        javax.swing.GroupLayout accelerationPanelLayout = new javax.swing.GroupLayout(accelerationPanel);
-//        accelerationPanel.setLayout(accelerationPanelLayout);
-//        accelerationPanelLayout.setHorizontalGroup(
-//            accelerationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 279, Short.MAX_VALUE)
-//        );
-//        accelerationPanelLayout.setVerticalGroup(
-//            accelerationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 213, Short.MAX_VALUE)
-//        );
-//
-//        jTabbedPane1.addTab("Acceleration", accelerationPanel);
+		irCombinedLayout.setHorizontalGroup(irCombinedLayout
+				.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0,
+						272, Short.MAX_VALUE));
+		irCombinedLayout.setVerticalGroup(irCombinedLayout.createParallelGroup(
+				GroupLayout.Alignment.LEADING).addGap(0, 299, Short.MAX_VALUE));
 
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//        javax.swing.GroupLayout motionSensingPanelLayout = new javax.swing.GroupLayout(motionSensingPanel);
-//        motionSensingPanel.setLayout(motionSensingPanelLayout);
-//        motionSensingPanelLayout.setHorizontalGroup(
-//            motionSensingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 279, Short.MAX_VALUE)
-//        );
-//        motionSensingPanelLayout.setVerticalGroup(
-//            motionSensingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 213, Short.MAX_VALUE)
-//        );
+		irCombinedPanel.setBorder(BorderFactory.createEtchedBorder());
+		irCombinedPanel.setLayout(new BoxLayout(irCombinedPanel,
+				BoxLayout.LINE_AXIS));
 
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//        jTabbedPane1.addTab("Orientation", motionSensingPanel);
-//        javax.swing.GroupLayout gForcePanelLayout = new javax.swing.GroupLayout(gForcePanel);
-//        gForcePanel.setLayout(gForcePanelLayout);
-//        gForcePanelLayout.setHorizontalGroup(
-//            gForcePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 279, Short.MAX_VALUE)
-//        );
-//        gForcePanelLayout.setVerticalGroup(
-//            gForcePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-//            .addGap(0, 213, Short.MAX_VALUE)
-//        );
+		clearDrawingButton.setText("Clear");
+		clearDrawingButton.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				clearDrawingButtonMousePressed(evt);
+			}
+		});
+		buttonPanel.add(clearDrawingButton);
 
-//		  jTabbedPane1.addTab("GForce", gForcePanel);
+		calibButton.setText("Start Calibration");
+		calibButton.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				calibButtonMousePressed(evt);
+			}
+		});
+		buttonPanel.add(calibButton);
 
-       
+		LRButton.setText("Left");
+		LRButton.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				LRButtonMousePressed(evt);
+			}
+		});
+		buttonPanel.add(LRButton);
 
-//        jTabbedPane1.getAccessibleContext().setAccessibleName("Orientation");
-        
-        
-        irCombinedPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        irCombinedPanel.setLayout(new javax.swing.BoxLayout(irCombinedPanel, javax.swing.BoxLayout.LINE_AXIS));
+		GroupLayout irPadPanelLayout = new GroupLayout(irPadPanel);
+		irPadPanel.setLayout(irPadPanelLayout);
+		irPadPanelLayout.setHorizontalGroup(
+				irPadPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+				.addComponent(irViewPanel1, GroupLayout.Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
+				.addComponent(irViewPanel2, GroupLayout.Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
+				.addComponent(buttonPanel, GroupLayout.Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE));
+		irPadPanelLayout.setVerticalGroup(irPadPanelLayout.createParallelGroup(
+				GroupLayout.Alignment.LEADING).addGroup(
+				GroupLayout.Alignment.TRAILING,
+				irPadPanelLayout
+						.createSequentialGroup()
+						.addComponent(buttonPanel, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(irViewPanel1, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(irViewPanel2, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 
-        
-		/**
-		 * Original Wiiusej components that are not used for our purposes -Eddie
-		 */
-//        controlsPanel.setMinimumSize(new java.awt.Dimension(100, 264));
-//        controlsPanel.setPreferredSize(new java.awt.Dimension(190, 264));
-//        controlsPanel.setLayout(new java.awt.GridLayout(16, 1));
+		));
 
-       
+		irCombinedPanel.add(irCombined);
+		GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setHorizontalGroup(layout.createParallelGroup(
+				GroupLayout.Alignment.LEADING).addGroup(
+				layout.createSequentialGroup()
+						.addComponent(irPadPanel, GroupLayout.PREFERRED_SIZE,
+								238, GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(irCombinedPanel,
+								GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE))
 
-        toggleIRTrackingButton.setText("Clear");
-        toggleIRTrackingButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                toggleIRTrackingButtonMousePressed(evt);
-            }
-        });
-        activateRumbleIRPanel.add(toggleIRTrackingButton);
+		);
+		layout.setVerticalGroup(layout
+				.createParallelGroup(Alignment.LEADING)
+				.addComponent(irPadPanel, GroupLayout.DEFAULT_SIZE, 573,
+						Short.MAX_VALUE)
+				.addComponent(irCombinedPanel, GroupLayout.DEFAULT_SIZE, 573,
+						Short.MAX_VALUE));
 
-        //controlsPanel.add(activateRumbleIRPanel);
+		setBounds((screenSize.width - 800) / 2, (screenSize.height - 600) / 2,
+				800, 600);
 
-        
+	}// </editor-fold>//GEN-END:initComponents
 
-
-        led1Button.setText("Led1");
-        led1Button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                led1ButtonMousePressed(evt);
-            }
-        });
-        setLedsPanel.add(led1Button);
-
-        led2Button.setText("Led2");
-        led2Button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                led2ButtonMousePressed(evt);
-            }
-        });
-        setLedsPanel.add(led2Button);
-
-        calibButton.setText("Capture");
-        calibButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                calibButtonMousePressed(evt);
-            }
-        });
-        activateRumbleIRPanel.add(calibButton);
-
-        LRButton.setText("Left");
-        LRButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                LRButtonMousePressed(evt);
-            }
-        });
-        
-        activateRumbleIRPanel.add(LRButton);
-
-        setLedsButton.setText("Set leds");
-        setLedsButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                setLedsButtonMousePressed(evt);
-            }
-        });
-        setLedsPanel.add(setLedsButton);
-
-        //controlsPanel.add(setLedsPanel);
-
-
-        
-      
-
-        
-
-        setIrSensitivyPanel.add(getStatusButton);
-
-        setIrSensitivySpinner.setPreferredSize(new java.awt.Dimension(50, 18));
-        setIrSensitivySpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                setIrSensitivySpinnerStateChanged(evt);
-            }
-        });
-        setIrSensitivyPanel.add(setIrSensitivySpinner);
-
-        setIrSensitivyButton.setText("Set IR Sensivity");
-        setIrSensitivyButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                setIrSensitivyButtonMousePressed(evt);
-            }
-        });
-        setIrSensitivyPanel.add(setIrSensitivyButton);
-
-       
-
-        //controlsPanel.add(setIrSensitivyPanel);
-
-       
-
-        toggleSensorBarPositionButton.setText("Set sensor bar above");
-        toggleSensorBarPositionButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                toggleSensorBarPositionButtonMousePressed(evt);
-            }
-        });
-        setIRConfPanel.add(toggleSensorBarPositionButton);
-
-        toggleScreenAspectRatioButton.setText("Set screen aspect ratio 4/3");
-        toggleScreenAspectRatioButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                toggleScreenAspectRatioButtonMousePressed(evt);
-            }
-        });
-        setIRConfPanel.add(toggleScreenAspectRatioButton);
-
-        
-        
-        javax.swing.GroupLayout irPadPanelLayout = new javax.swing.GroupLayout(irPadPanel);
-        irPadPanel.setLayout(irPadPanelLayout);
-        irPadPanelLayout.setHorizontalGroup(
-            irPadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(irViewPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(irViewPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(activateRumbleIRPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        irPadPanelLayout.setVerticalGroup(
-            irPadPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, irPadPanelLayout.createSequentialGroup()
-            	.addComponent(activateRumbleIRPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(irViewPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(irViewPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                
-                
-                )
-        );
-        
-        
-        //controlsPanel.add(jTabbedPane1);
-        //irCombinedPanel.add(controlsPanel);
-        irCombinedPanel.add(irCombined);
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(irPadPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)                
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(irCombinedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
-                //.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                //.addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
-                )
-                
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(irPadPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
-            .addComponent(irCombinedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
-            //.addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
-        );
-
-        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds((screenSize.width-800)/2, (screenSize.height-600)/2, 800, 600);
-    }// </editor-fold>//GEN-END:initComponents
-
-	private void toggleIRTrackingButtonMousePressed(
-			java.awt.event.MouseEvent evt) {// GEN-FIRST:event_toggleIRTrackingButtonMousePressed
-		if (toggleIRTrackingButton.isEnabled()) {
+	private void clearDrawingButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_clearDrawingButtonMousePressed
+		if (clearDrawingButton.isEnabled()) {
 			clearViews();
-		} else {
-			wiimote.deactivateIRTRacking();
-			wiimote2.deactivateIRTRacking();
-			toggleIRTrackingButton.setEnabled(true);
-			toggleIRTrackingButton.setText("Activate IR Tracking");
-			((IRPanel) irViewPanel1).onDisconnectionEvent(null);
-			((IRPanel) irViewPanel2).onDisconnectionEvent(null);
-			messageText.setText("IR Tracking deactivated");
 		}
-	}// GEN-LAST:event_toggleIRTrackingButtonMousePressed
+	}// GEN-LAST:event_clearDrawingButtonMousePressed
 
-	
-
-	private void led1ButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_led1ButtonMousePressed
-		if (led1Button.isEnabled()) {
-			led1Button.setEnabled(false);
-		} else {
-			led1Button.setEnabled(true);
-		}
-	}// GEN-LAST:event_led1ButtonMousePressed
-
-	private void led2ButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_led2ButtonMousePressed
-		if (led2Button.isEnabled()) {
-			led2Button.setEnabled(false);
-		} else {
-			led2Button.setEnabled(true);
-		}
-	}// GEN-LAST:event_led2ButtonMousePressed
-
-	private void calibButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_calibButtonMousePressed
+	private void calibButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_calibButtonMousePressed
 		if (calibButton.isEnabled()) {
+			// debug statement block
+			System.out.println("Button got pressed!");
+			printCaliState();
 			calibButton.setEnabled(false);
 			calibButton.setText("Locked");
-		} 
+			state.calibrate();
+			setState(state.getNext());
+		}
 	}// GEN-LAST:event_calibButtonMousePressed
 
-	private void LRButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_LRButtonMousePressed
-		if (LRButton.isEnabled()) {
-			LRButton.setEnabled(false);
-			LRButton.setText("Right");
-			cal.leftSide = false;
-		} else {
-			LRButton.setEnabled(true);
-			LRButton.setText("Left");
-			cal.leftSide = true;
+	private void LRButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_LRButtonMousePressed
+		// only allow changing of left and right if we are not in the middle of
+		// a calibration
+		// changes initial starting state as well
+		if (!isCalibrating) {
+			if (LRButton.isEnabled()) {
+				LRButton.setEnabled(false);
+				LRButton.setText("Right");
+				cal.leftSide = false;
+				setState(cState.RIGHTBL);
+			} else {
+				LRButton.setEnabled(true);
+				LRButton.setText("Left");
+				cal.leftSide = true;
+				setState(cState.LEFTBR);
+			}
 		}
+
 	}// GEN-LAST:event_LRButtonMousePressed
 
-	private void setLedsButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_setLedsButtonMousePressed
-		wiimote.setLeds(led1Button.isEnabled(), led2Button.isEnabled(),
-				calibButton.isEnabled(), LRButton.isEnabled());
-		messageText.setText("Leds set");
-	}// GEN-LAST:event_setLedsButtonMousePressed
+	/**
+	 * Draws on the map panel based on calibrated results
+	 * 
+	 * @param x
+	 * @param y
+	 * @param lastX
+	 * @param lastY
+	 */
+	public static void drawCombine(int x, int y, int lastX, int lastY) {
+		int[] adjust = cal.calculateOffsets(x, y);
+		int[] adjustLast = cal.calculateOffsets(lastX, lastY);
 
-	private void getStatusButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_getStatusButtonMousePressed
-		wiimote.getStatus();
-		statusMotionRequested = true;
-		statusIRRequested = true;
-		if (expansionFrame instanceof NunchukGuiTest) {
-			((NunchukGuiTest) expansionFrame).requestThresholdsUpdate();
-		}
-	}// GEN-LAST:event_getStatusButtonMousePressed
+		((IRCombined) irCombined).onIrEvent(adjust[0], adjust[1],
+				adjustLast[0], adjustLast[1]);
+	}
 
-	private void toggleSensorBarPositionButtonMousePressed(
-			java.awt.event.MouseEvent evt) {// GEN-FIRST:event_toggleSensorBarPositionButtonMousePressed
-		if (toggleSensorBarPositionButton.isEnabled()) {
-			wiimote.setSensorBarBelowScreen();
-			toggleSensorBarPositionButton.setEnabled(false);
-			toggleSensorBarPositionButton.setText("Set sensor bar below");
-			messageText.setText("Sensor bar set above");
-		} else {
-			wiimote.setSensorBarAboveScreen();
-			toggleSensorBarPositionButton.setEnabled(true);
-			toggleSensorBarPositionButton.setText("Set sensor bar above");
-			messageText.setText("Sensor bar set below");
-		}
-	}// GEN-LAST:event_toggleSensorBarPositionButtonMousePressed
+	/**
+	 * Sets state of calibration ready for any re-calibrating,
+	 * based on where the wiimotes are
+	 * @param s
+	 */
+	private void setState(cState s) {
+		state = s;
 
-	private void toggleScreenAspectRatioButtonMousePressed(
-			java.awt.event.MouseEvent evt) {// GEN-FIRST:event_toggleScreenAspectRatioButtonMousePressed
-		if (toggleScreenAspectRatioButton.isEnabled()) {
-			wiimote.setScreenAspectRatio43();
-			toggleScreenAspectRatioButton.setEnabled(false);
-			toggleScreenAspectRatioButton
-					.setText("Set screen aspect ratio 16/9");
-			messageText.setText("creen aspect ratio to 4/3");
-		} else {
-			wiimote.setScreenAspectRatio169();
-			toggleScreenAspectRatioButton.setEnabled(true);
-			toggleScreenAspectRatioButton
-					.setText("Set screen aspect ratio 4/3");
-			messageText.setText("Screen aspect ratio to 16/9");
-		}
-	}// GEN-LAST:event_toggleScreenAspectRatioButtonMousePressed
-
-	
-
-	private void mouseIRControlButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_mouseIRControlButtonMousePressed
-		if (mouseIRControlButton.isEnabled()) {
-			try {
-				mouseIRControlButton.setEnabled(false);
-				mouseIRControlButton.setText("Stop infrared mouse control");
-				robot = new Robot();
-				messageText.setText("Infrared mouse control started");
-			} catch (AWTException ex) {
-				Logger.getLogger(WiiuseJGuiTest.class.getName()).log(
-						Level.SEVERE, null, ex);
-			}
-		} else {
-			mouseIRControlButton.setEnabled(true);
-			mouseIRControlButton.setText("Start infrared mouse control");
-			robot = null;
-			messageText.setText("Infrared mouse control stopped");
-		}
-	}// GEN-LAST:event_mouseIRControlButtonMousePressed
-
-	
-	private void setIrSensitivySpinnerStateChanged(
-			javax.swing.event.ChangeEvent evt) {// GEN-FIRST:event_setIrSensitivySpinnerStateChanged
-		String value = setIrSensitivySpinner.getValue().toString();
-		boolean isInt = true;
-		int valueInt = 0;
-		try {
-			valueInt = Integer.parseInt(value);
-		} catch (NumberFormatException e) {
-			isInt = false;
-			messageText.setText("Wrong value for IR senstivity.");
-		}
-		if (isInt) {
-			if (valueInt > 5) {
-				setIrSensitivySpinner.setValue("1000");
-			} else if (valueInt < 0) {
-				setIrSensitivySpinner.setValue("0");
-			}
-		}
-	}// GEN-LAST:event_setIrSensitivySpinnerStateChanged
-
-	
-	private void setIrSensitivyButtonMousePressed(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_setIrSensitivyButtonMousePressed
-		String value = setIrSensitivySpinner.getValue().toString();
-		boolean isInt = true;
-		int valueInt = 0;
-		try {
-			valueInt = Integer.parseInt(value);
-		} catch (NumberFormatException e) {
-			isInt = false;
-			messageText
-					.setText("Wrong value for IR sensitivity. It must be an int !");
-		}
-		if (isInt) {
-			if (valueInt >= 1 && valueInt <= 5) {
-				wiimote.setIrSensitivity(valueInt);
-				messageText.setText("IR senstivity set to: " + valueInt + ".");
+		if (state == null) {
+			if (cal.leftSide == true) {
+				setState(cState.LEFTBR);
 			} else {
-				messageText
-						.setText("Wrong value for IR senstivity. It muset be between 1 and 5 !");
+				setState(cState.RIGHTBL);
 			}
 		}
-	}// GEN-LAST:event_setIrSensitivyButtonMousePressed
-
-	
-
-	// Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel accelerationPanel;
-    
-    private javax.swing.JTextField accelerationThresholdTextField;
-
-    private javax.swing.JPanel activateRumbleIRPanel;
-    
-    private javax.swing.JTextField alphaSmoothingTextField;
-    private javax.swing.JLabel batteryLevelText;
-    
-    private javax.swing.JPanel buttonsPanel;
-    private javax.swing.JPanel controlsPanel;
-    
-
-   
-    private javax.swing.JLabel expansionText;
-    private javax.swing.JPanel gForcePanel;
-    private javax.swing.JButton getStatusButton;
-
-    private static javax.swing.JPanel irViewPanel1;
-    private static javax.swing.JPanel irViewPanel2;
-    private static javax.swing.JPanel irCombined;    
-    private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JButton led1Button;
-    private javax.swing.JButton led2Button;
-    private static javax.swing.JButton calibButton;
-    private javax.swing.JButton LRButton;
-    private javax.swing.JPanel irPadPanel;
-
-    private javax.swing.JLabel messageText;
-
-    private javax.swing.JPanel motionSensingPanel;
-    private javax.swing.JButton mouseIRControlButton;
-
-
-    private javax.swing.JTextField orientationThresholdTextField;
-    private javax.swing.JPanel irCombinedPanel;
-    
-    private javax.swing.JPanel setIRConfPanel;
-    private javax.swing.JButton setIrSensitivyButton;
-    private javax.swing.JPanel setIrSensitivyPanel;
-    private javax.swing.JSpinner setIrSensitivySpinner;
-    private javax.swing.JButton setLedsButton;
-    private javax.swing.JPanel setLedsPanel;  
-    private javax.swing.JButton showExpansionWiimoteButton;
-    private javax.swing.JButton toggleIRTrackingButton;
-
-    private javax.swing.JButton toggleScreenAspectRatioButton;
-    private javax.swing.JButton toggleSensorBarPositionButton;
-    private javax.swing.JTextField xResolutionTextField;
-    private javax.swing.JTextField yResolutionTextField;
-    // End of variables declaration//GEN-END:variables
-
-	public static void drawCombine(int x, int y, int lastX, int lastY){	
-		int[] adjust = cal.calculateOffsets(x,y);
-		int[] adjustLast = cal.calculateOffsets(lastX,lastY);
-		
-		((IRCombined) irCombined).onIrEvent(adjust[0], adjust[1],adjustLast[0],adjustLast[1]);
 	}
-	
-	// James's calibration routine
-	public static void calibrate(){
-		int[][] calibMatrix = new int[9][2];
-		int[][] coords = cal.eventFilter(2);
-		cal.setF(8f, 5.5f);		
-		cal.setDefaultFloor((coords[0][1] + coords[1][1])/2);
-		cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote, wiimote2);
-		
-		// clears what's drawn so far if calibration is required
-		clearViews();
-		calibMatrix[0] = cal.calculateOffsets(coords[0][0], coords[1][0]);
-		calibButton.setEnabled(true);
-		calibButton.setText("Capture");
-		((IRCombined) irCombined).drawCalib(calibMatrix[0]);
-		
-		// calibration routine for points 1 to 8
-		// need to inject verbal instructions here
-		for(int i = 2; i < 9; i++){
-			
-			// debug purpose
-			while(calibButton.isEnabled() == true){
-				System.out.print("SP: " + i + "");
-			}
-			
-			// display instructions here
-			
-			// draw the source of the received IR
-			int[][] temp = cal.getCalibPoints(calibButton);
-			calibMatrix[i - 1] = cal.calculateOffsets(temp[0][0], temp[1][0]);
-			
-			((IRCombined) irCombined).drawCalib(calibMatrix[i - 1]);
-		}
-		
-		calibButton.setEnabled(false);
-		calibButton.setText("DONE");
-		
-		cal.generateBoundaries(calibMatrix);
-		// remove drawn calibration points
-		clearViews();
-	
+
+	/**
+	 * Debug function; should be removed from final product
+	 */
+	public static void printCaliState() {
+		System.out.println("isCalibrating state: " + isCalibrating);
+		System.out.println("CaliButton state: " + calibButton.isEnabled());
+		System.out.println("Order: " + state.order);
+		System.out.println("");
 	}
-	
-	
-		
+
 }
