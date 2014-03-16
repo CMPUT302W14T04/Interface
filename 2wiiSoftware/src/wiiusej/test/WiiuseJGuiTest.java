@@ -147,7 +147,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 				((IRCombined) irCombined).drawCalib(calibMatrix[order]);
 
 				// when we finish calibration
-				if (order == '7') {
+				if (order == 7) {
 					calibButton.setEnabled(true);
 					calibButton.setText("Re-Calibrate");
 					isCalibrating = false;
@@ -534,6 +534,7 @@ public class WiiuseJGuiTest extends javax.swing.JFrame implements
 	public static void printCaliState() {
 		System.out.println("isCalibrating state: " + isCalibrating);
 		System.out.println("CaliButton state: " + calibButton.isEnabled());
+		System.out.println("Order: " + state.order);
 		System.out.println("");
 	}
 
