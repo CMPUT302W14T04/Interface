@@ -110,9 +110,10 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	 * Creates new form WiiuseJGuiTest
 	 */
 	public WiiuseJGuiTest(Wiimote wiimote, Wiimote wiimote2) {
+		
 		// initial calibration state ready to start calibrating
 		cState = new CState();
-		cState.setCState(calibrationState.BEGIN);
+		
 		initComponents();
 		this.addWindowListener(new CloseGuiTestCleanly());
 
@@ -205,7 +206,8 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 		unregisterListeners();
 		clearViews();
 		// change calibration status to reflect need of calibration
-		cState.setCState(calibrationState.DISCONN);
+		CState.setCState(calibrationState.DISCONN);
+		setDirection();
 	}
 
 	/**
@@ -304,9 +306,7 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 		directionTextArea.setEditable(false);
 		
 		// initial instructions
-		setDirection("This textbox will display instructions to guide you in system setup and reports the system's status.\n\n" +
-				"Click on the \"Start Calibration\" button to begin the calibration process!\n\n" +
-				"Instructions on how to calibrate the system will be displayed here.");
+		setDirection();
 		
 		calibTextPanel.setBorder(BorderFactory.createEtchedBorder());
 		
@@ -406,28 +406,51 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	}// GEN-LAST:event_clearDrawingButtonMousePressed
 
 	private void calibButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_calibButtonMousePressed
+		//TODO
+		
+		// disable other buttons once calibration starts
+		LRButton.setEnabled(false);
+		LRButton.setText(" ");
+		clearDrawingButton.setEnabled(false);
+		clearDrawingButton.setText(" ");
+		
 		if (calibButton.isEnabled()) {
 			
-			// setup of wiimotes
-			if (cState.getCState() == calibrationState.LEFTBRT || cState.getCState() == calibrationState.RIGHTBLT) {
-				//TODO
-			}
-			
-			// calibration of the wiimotes
-			else {
+			// calibration is required
+			if (CState.getCalib()) {
+				
+				// insert calibration instruction here based on Order/Position
+				setDirection();
+				calibButton.setText("Waiting for IR Signal");
+				calibButton.setEnabled(false);
+				
 				calibrate();
-			
+				
 				// move on to the next state after this step of calibration
 				calibrationState next = cState.getNext();
-				cState.setCState(next);
+				CState.setCState(next);
 			}
 			
-			// enable/disable LRButton depending on new calibration state
-			if (cState.getLRAllow()) {
-				LRButton.setEnabled(true);
-			}
+			// pressing calibration button when we are not calibrating the 8 points of the map
 			else {
-				LRButton.setEnabled(true);
+				
+				calibButton.setText("Next Step");
+				
+				// determine the starting point of calibration depending on left/right
+				if (cState.getCState() == calibrationState.LEFTWII2) {
+					CState.setCState(calibrationState.LEFTBRT);
+				}
+				else if (cState.getCState() == calibrationState.RIGHTWII2) {
+					CState.setCState(calibrationState.RIGHTBLT);
+				}
+				
+				else {
+					// move on to the next state after this step of calibration
+					calibrationState next = cState.getNext();
+					CState.setCState(next);
+				}
+				
+				setDirection();
 			}
 		}
 	}// GEN-LAST:event_calibButtonMousePressed
@@ -440,14 +463,13 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 		if (LRButton.isEnabled()) {
 			if (cal.leftSide) {
 				cal.leftSide = false;
-				setDirection("Wiimotes orientation has changed.\n\n" +
-						"Wiimotes are expected to be on top and on the right hand side of the map.\n\n");
+				CState.setCState(calibrationState.BEGINRIGHT);
 			} 
 			else {
 				cal.leftSide = true;
-				setDirection("Wiimotes orientation has changed.\n\n" +
-						"Wiimotes are expected to be on top and on the left hand side of the map.\n\n");
+				CState.setCState(calibrationState.BEGINLEFT);
 			}
+			setDirection();
 		}
 
 	}// GEN-LAST:event_LRButtonMousePressed
@@ -472,53 +494,9 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	 * Function to quickly set the text display of the directionTextArea
 	 * @param text
 	 */
-	private static void setDirection(String text) {
-		String calibrationStatusText;
-		String wiimotePositionText;
-		
-		// default message when user starts the program, before calibration
-		if (cState.getCState() == calibrationState.BEGIN) {
-			calibrationStatusText = "System Status: Needs Calibration\n\n" +
-					"It is recommended that if you are left handed, you should switch the orientation " +
-					"of the wiimotes to be on the right hand side of the map.\n\n";
-		}
-
-		// message once calibration is complete
-		else if (cState.getCState() == calibrationState.DONE){
-			calibrationStatusText = "System Status: Calibrated!\n\n" +
-					"Do not move the wiimotes until the end of operation.\n\n";
-		}
-		
-		// message if re-calibration is needed for any reason
-		else if (cState.getCState() == calibrationState.DISCONN){
-			calibrationStatusText = "System Status: Needs re-calibration\n\n" +
-					"Session has been automatically saved and terminated. Please start a new" +
-					"session.\n\n";
-		}
-		
-		else if (cState.getCState() == calibrationState.RECALICONFIRM) {
-			calibrationStatusText = "System Status: Calibrated!\n\n";
-			// TODO confirmation message somehow
-		}
-		
-		// during calibration
-		else {
-			calibrationStatusText = "System status: System is currently being calibrated.\n\n" +
-					"During calibration, you may not change the orientation of the wiimotes nor" +
-					" can you clear what is drawn on the screen.\n\n";
-		}
-		
-		if (cal.leftSide) {
-			wiimotePositionText = "Wiimotes are currently placed at the top and left hand side of the map.\n\n" +
-					"This can be changed with the \"Change Wiimote Orientation\" button.\n\n";
-		}
-		else {
-			wiimotePositionText = "Wiimotes are currently placed at the top and right hand side of the map.\n\n" +
-					"This can be changed with the \"Change Wiimote Orientation\" button.\n\n";
-		}
-		
-		String finaltext = calibrationStatusText + wiimotePositionText + text;
-		directionTextArea.setText(finaltext);
+	private static void setDirection() {
+		String text = CState.getDescription();
+		directionTextArea.setText(text);
 	}
 	
 	/**
@@ -577,7 +555,6 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	 * Debug function; should not be visible in final product
 	 */
 	public static void printCaliState() {
-		cState.setCState(calibrationState.BEGIN);
 		System.out.println("Calibration state: " + cState.getCState());
 		System.out.println("CaliButton state: " + calibButton.isEnabled());
 		System.out.println("Order: " + cState.getNext().toString());
@@ -591,76 +568,65 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	 */
 	void calibrate() {
 		
-		// disable other buttons once calibration starts
-		LRButton.setEnabled(false);
-		LRButton.setText(" ");
-		clearDrawingButton.setEnabled(false);
-		clearDrawingButton.setText(" ");
+		//TODO
+		
+		int i = CState.getCalibMatrixPos();
 
 		// special procedures for beginning of calibration
 		if (cState.getCState() == calibrationState.LEFTBRT || cState.getCState() == calibrationState.RIGHTBLT) {
-			
-			// insert calibration instruction here based on Order/Position
-			setDirection(cState.getDescription());
-			calibButton.setEnabled(false);
-			calibButton.setText("Calibrating...");
 			
 			clearViews();
 			// enable this following block for real usage
 			// int[][] coords = cal.eventFilter(2);
 
-			// for development purposes only; final program should not be in
-			int[][] coords;
-			try {
-				coords = cal.getFakeCalibPoints(1);
+			// for development purposes only; final program should not be in try catch block
+			int[][] coords; //delete this line for real
+			try { //delete this line for real
+				
+				coords = cal.getFakeCalibPoints(i); //delete this line for real
 				cal.setF(8f, 5.5f);
 				cal.setDefaultFloor((coords[0][1] + coords[1][1]) / 2);
 				cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote,
 						wiimote2);
 
-				calibMatrix[0] = cal.calculateOffsets(coords[0][0],
+				calibMatrix[i] = cal.calculateOffsets(coords[0][0],
 						coords[1][0]);
 
-				setDirection(cState.getDescription());
+				setDirection();
 				calibButton.setEnabled(true);
 				calibButton.setText("Capture Next Point");
 				((IRCombined) mapDraw).drawCalib(calibMatrix[0]);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			} catch (InterruptedException e) { //delete this line for real
+				e.printStackTrace(); //delete this line for real
 			}
 
 		}
 		
 		else {
 			// draw the source of the received IR
-			
-			// insert calibration instruction here based on Order/Position
-			setDirection(cState.getDescription());
-			calibButton.setEnabled(false);
-			calibButton.setText("Calibrating...");
 
 			// enable this following block for real usage
 			// int[][] temp = cal.getCalibPoints(calibButton);
 
 			// for development purposes only; disable this block for real usage
-			int[][] temp;
-			try {
-				temp = cal.getFakeCalibPoints(5);
+			int[][] temp; //delete this line for real
+			try { //delete this line for real
+				temp = cal.getFakeCalibPoints(5); //delete this line for real
 				
-				calibMatrix[5] = cal.calculateOffsets(temp[0][0],
+				calibMatrix[i] = cal.calculateOffsets(temp[0][0],
 						temp[1][0]);
 
 				((IRCombined) mapDraw).drawCalib(calibMatrix[5]);
 				
 				// insert calibration instruction here based on Order/Position
-				setDirection(cState.getDescription());
+				setDirection();
 				calibButton.setEnabled(true);
 				calibButton.setText("Capture Next Point");
 				
 				// when we finish calibration
 				if (cState.getCState() == calibrationState.LEFTMRF || cState.getCState() == calibrationState.RIGHTMRF) {
 					calibButton.setText("Re-Calibrate");
-					cState.setCState(calibrationState.DONE);
+					CState.setCState(calibrationState.DONE);
 					
 					// re-enable clearDrawingButtons
 					clearDrawingButton.setText("Clear DrawPad");

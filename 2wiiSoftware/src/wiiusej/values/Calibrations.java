@@ -371,7 +371,7 @@ public class Calibrations {
 	public int[][] getFakeCalibPoints(int i) throws InterruptedException {
 		try {
 			System.out.println("before sleep");
-			Thread.sleep(5000);
+			Thread.sleep(2000);
 			System.out.println("after sleep\n"); 
 			} 
 		catch (InterruptedException ie) {
