@@ -127,8 +127,6 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 				initWiimote();
 				wiimote.activateIRTRacking();
 				wiimote2.activateIRTRacking();
-				calibButton.setEnabled(false);
-				calibButton.setText("Locked- No Wiimotes detected");
 
 			}
 		}
@@ -317,10 +315,11 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 				.addComponent(directionTextArea, Alignment.TRAILING,
 						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 						Short.MAX_VALUE)
-// 				Uncomment this block to see each individual wiimote's pickup
-//				.addComponent(irCombinedPanel, Alignment.TRAILING,
-//						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-//						Short.MAX_VALUE)
+ 				//Uncomment this block to see each individual wiimote's pickup
+				// TODO (no actual TODO, just for fast jump)
+				.addComponent(irCombinedPanel, Alignment.TRAILING,
+						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+						Short.MAX_VALUE)
 				.addComponent(buttonPanel, Alignment.TRAILING,
 						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 						Short.MAX_VALUE));
@@ -332,9 +331,10 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 						.addComponent(directionTextArea,
 								GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 								Short.MAX_VALUE)
-// 						Uncomment this block to see each individual wiimote's pickup
-//						.addComponent(irCombinedPanel, GroupLayout.DEFAULT_SIZE,
-//								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+ 						//Uncomment this block to see each individual wiimote's pickup
+						// TODO (no actual TODO, just for fast jump)
+						.addComponent(irCombinedPanel, GroupLayout.DEFAULT_SIZE,
+								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(buttonPanel)
 
 		));
@@ -363,7 +363,7 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 		});
 
 		// button to start the calibration process
-		calibButton.setText("Start Calibration");
+		calibButton.setText(CState.getButton());
 		calibButton.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				calibButtonMousePressed(evt);
@@ -408,52 +408,92 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	private void calibButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_calibButtonMousePressed
 		//TODO
 		
-		// disable other buttons once calibration starts
-		LRButton.setEnabled(false);
-		LRButton.setText(" ");
-		clearDrawingButton.setEnabled(false);
-		clearDrawingButton.setText(" ");
-		
 		if (calibButton.isEnabled()) {
+			// disable other buttons once calibration starts
+			LRButton.setEnabled(false);
+			LRButton.setText(" ");
+			clearDrawingButton.setEnabled(false);
+			clearDrawingButton.setText(" ");
+			
+			// debug statement
+			System.out.println("Pressed button");
+			printCaliState();
 			
 			// calibration is required
 			if (CState.getCalib()) {
 				
-				// insert calibration instruction here based on Order/Position
+				// determine the starting point of calibration depending on left/right
+				if (cState.getCState() == calibrationState.LEFTWII2) {
+					CState.setCState(calibrationState.LEFTBRT);
+					clearViews();
+				}
+				else if (cState.getCState() == calibrationState.RIGHTWII2) {
+					CState.setCState(calibrationState.RIGHTBLT);
+					clearViews();
+				}
+				// in any other case, it is sequential so use getNext()
+				else {
+					calibrationState next = cState.getNext();
+					CState.setCState(next);
+				}
+				
+
+				
+				// update to display the polling messages/instructions
 				setDirection();
-				calibButton.setText("Waiting for IR Signal");
-				calibButton.setEnabled(false);
+				calibButton.setText(CState.getButton());
+
+				// if we are expecting IR signal, get it now
+				if (CState.getPollState()) {
+					//calibrate(); //something wrong with this?
+				}
 				
-				calibrate();
+				System.out.println("after calibrate()");
 				
-				// move on to the next state after this step of calibration
-				calibrationState next = cState.getNext();
-				CState.setCState(next);
+				// when we finish calibration
+				if (cState.getCState() == calibrationState.LEFTMRF || cState.getCState() == calibrationState.RIGHTMRF) {
+					CState.setCState(calibrationState.DONE);
+					
+					// re-enable clearDrawingButtons
+					clearDrawingButton.setText("Clear DrawPad");
+					clearDrawingButton.setEnabled(true);
+
+					// calibrate based on 8 points of the map
+					cal.generateBoundaries(calibMatrix);
+					
+					// remove drawn calibration points
+					clearViews();
+				}
 			}
 			
 			// pressing calibration button when we are not calibrating the 8 points of the map
 			else {
 				
-				calibButton.setText("Next Step");
-				
-				// determine the starting point of calibration depending on left/right
-				if (cState.getCState() == calibrationState.LEFTWII2) {
-					CState.setCState(calibrationState.LEFTBRT);
+				// if calibration is done but user wants to recalibrate:
+				if (cState.getCState() == calibrationState.DONE) {
+					setDirection();
+					calibButton.setText(CState.getButton());
+					// disable button for now
+					calibButton.setEnabled(false);
 				}
-				else if (cState.getCState() == calibrationState.RIGHTWII2) {
-					CState.setCState(calibrationState.RIGHTBLT);
-				}
-				
+
 				else {
 					// move on to the next state after this step of calibration
 					calibrationState next = cState.getNext();
 					CState.setCState(next);
+					
+					// update display based on new state
+					calibButton.setText(CState.getButton());
+					setDirection();
 				}
-				
-				setDirection();
+
 			}
-		}
-	}// GEN-LAST:event_calibButtonMousePressed
+			
+			// debug statements
+			System.out.println("End of button process");
+			printCaliState();
+		}		
+	}
 
 	private void LRButtonMousePressed(MouseEvent evt) {// GEN-FIRST:event_LRButtonMousePressed
 		// only allow changing of left and right if we are not in the middle of
@@ -557,19 +597,19 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 	public static void printCaliState() {
 		System.out.println("Calibration state: " + cState.getCState());
 		System.out.println("CaliButton state: " + calibButton.isEnabled());
-		System.out.println("Order: " + cState.getNext().toString());
+		System.out.println("Poll state: " + CState.getPollState());
 		System.out.println("");
 	}
 	
 	/**
 	 * Calibrate function that is called when calibration button is pressed
-	 * Function changes depending on state of which point is to be calibrated
-	 * and where the wiimotes are (left vs right) 
+	 * Function changes depending on calibration state (see CState.java) 
 	 */
 	void calibrate() {
 		
 		//TODO
 		
+		// calibration matrix position setter
 		int i = CState.getCalibMatrixPos();
 
 		// special procedures for beginning of calibration
@@ -577,75 +617,34 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 			
 			clearViews();
 			// enable this following block for real usage
-			// int[][] coords = cal.eventFilter(2);
+			int[][] coords = cal.eventFilter(2);
 
-			// for development purposes only; final program should not be in try catch block
-			int[][] coords; //delete this line for real
-			try { //delete this line for real
-				
-				coords = cal.getFakeCalibPoints(i); //delete this line for real
-				cal.setF(8f, 5.5f);
-				cal.setDefaultFloor((coords[0][1] + coords[1][1]) / 2);
-				cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote,
-						wiimote2);
+			//int[][] coords; //delete this line for real
+			//coords = cal.getFakeCalibPoints(i); //delete this line for real
+			cal.setF(8f, 5.5f);
+			cal.setDefaultFloor((coords[0][1] + coords[1][1]) / 2);
+			cal.spatializeWiiMotes2x(coords[0][0], coords[1][0], wiimote,wiimote2);
 
-				calibMatrix[i] = cal.calculateOffsets(coords[0][0],
-						coords[1][0]);
-
-				setDirection();
-				calibButton.setEnabled(true);
-				calibButton.setText("Capture Next Point");
-				((IRCombined) mapDraw).drawCalib(calibMatrix[0]);
-			} catch (InterruptedException e) { //delete this line for real
-				e.printStackTrace(); //delete this line for real
-			}
-
+			calibMatrix[i] = cal.calculateOffsets(coords[0][0],coords[1][0]);
+			((IRCombined) mapDraw).drawCalib(calibMatrix[0]);
 		}
 		
 		else {
 			// draw the source of the received IR
 
 			// enable this following block for real usage
-			// int[][] temp = cal.getCalibPoints(calibButton);
+			int[][] temp = cal.getCalibPoints(calibButton);
 
-			// for development purposes only; disable this block for real usage
-			int[][] temp; //delete this line for real
-			try { //delete this line for real
-				temp = cal.getFakeCalibPoints(5); //delete this line for real
+			//int[][] temp; //delete this line for real
+			//temp = cal.getFakeCalibPoints(5); //delete this line for real
 				
-				calibMatrix[i] = cal.calculateOffsets(temp[0][0],
-						temp[1][0]);
+			calibMatrix[i] = cal.calculateOffsets(temp[0][0],temp[1][0]);
 
-				((IRCombined) mapDraw).drawCalib(calibMatrix[5]);
-				
-				// insert calibration instruction here based on Order/Position
-				setDirection();
-				calibButton.setEnabled(true);
-				calibButton.setText("Capture Next Point");
-				
-				// when we finish calibration
-				if (cState.getCState() == calibrationState.LEFTMRF || cState.getCState() == calibrationState.RIGHTMRF) {
-					calibButton.setText("Re-Calibrate");
-					CState.setCState(calibrationState.DONE);
-					
-					// re-enable clearDrawingButtons
-					clearDrawingButton.setText("Clear DrawPad");
-					clearDrawingButton.setEnabled(true);
-
-					cal.generateBoundaries(calibMatrix);
-					// remove drawn calibration points
-					clearViews();
-					
-			}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-
-				
-				} 
-
-			}
-
+			((IRCombined) mapDraw).drawCalib(calibMatrix[5]);
+		} 
+		
+		// change calibButton state to signal that calibration process is done
+		// allows the calibButtonListener to exit its while loop
+		calibButton.setEnabled(true);
+	}
 }

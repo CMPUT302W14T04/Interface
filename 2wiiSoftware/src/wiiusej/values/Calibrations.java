@@ -368,15 +368,7 @@ public class Calibrations {
 	 * fakes the getCalibPoints function without wiimote to get real coordinates
 	 * using 8 nonsense points
 	 */
-	public int[][] getFakeCalibPoints(int i) throws InterruptedException {
-		try {
-			System.out.println("before sleep");
-			Thread.sleep(2000);
-			System.out.println("after sleep\n"); 
-			} 
-		catch (InterruptedException ie) {
-			    //Handle exception
-			}
+	public int[][] getFakeCalibPoints(int i) {
 		int[][] coords = new int[2][2];
 		coords[0][0] = 20 * i +1;
 		coords[0][1] = 20 * i +1;
