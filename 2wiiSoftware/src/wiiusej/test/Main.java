@@ -34,16 +34,37 @@ public class Main {
 		System.getProperties().put("org.apache.commons.logging.simplelog.defaultlog","fatal");
 		Wiimote[] wiimotes = WiiUseApiManager.getWiimotes(2, true);
 		
-		//launch GUI depending on wiimote availability
-		WiiuseJGuiTest gui = null;
-		if (wiimotes.length > 0) {
-			gui = new WiiuseJGuiTest(wiimotes[0], wiimotes[1]);
-		} else {
-			gui = new WiiuseJGuiTest();
+		boolean testOriginal = false;
+		
+		if (testOriginal) {
+			//launch GUI depending on wiimote availability
+			OriginalWiiuseJGuiTest gui = null;
+			//WiiuseJGuiTest gui = null;
+			if (wiimotes.length > 0) {
+				gui = new OriginalWiiuseJGuiTest(wiimotes[0], wiimotes[1]);
+				//gui = new WiiuseJGuiTest(wiimotes[0], wiimotes[1]);
+			} else {
+				//gui = new WiiuseJGuiTest();
+			}
+			gui.setDefaultCloseOperation(WiiuseJGuiTest.EXIT_ON_CLOSE);
+			gui.setVisible(true);
+			gui.setResizable(false);
+			
+			gui.calibrate();
 		}
-		gui.setDefaultCloseOperation(WiiuseJGuiTest.EXIT_ON_CLOSE);
-		gui.setVisible(true);
-		gui.setResizable(false);
+		
+		else {
+			WiiuseJGuiTest gui = null;
+			if (wiimotes.length > 0) {
+				gui = new WiiuseJGuiTest(wiimotes[0], wiimotes[1]);
+			} else {
+				gui = new WiiuseJGuiTest();
+			}
+			gui.setDefaultCloseOperation(WiiuseJGuiTest.EXIT_ON_CLOSE);
+			gui.setVisible(true);
+			gui.setResizable(false);
+		}
+
 	}
 
 }

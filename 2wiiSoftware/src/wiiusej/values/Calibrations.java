@@ -1,6 +1,7 @@
 package wiiusej.values;
 
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.event.EventListenerList;
@@ -367,14 +368,12 @@ public class Calibrations {
 	 * fakes the getCalibPoints function without wiimote to get real coordinates
 	 * using 8 nonsense points
 	 */
-	public int[][] getFakeCalibPoints(javax.swing.JButton buttonState, int i) {
+	public int[][] getFakeCalibPoints(int i) {
 		int[][] coords = new int[2][2];
-		coords[0][0] = 100 * i;
-		coords[0][1] = 100 * i;
-		coords[1][0] = 100 * i;
-		coords[1][1] = 100 * i;
-		buttonState.setEnabled(true);
-		buttonState.setText("Capture Next Point");
+		coords[0][0] = 20 * i +1;
+		coords[0][1] = 20 * i +1;
+		coords[1][0] = 20 * i +1;
+		coords[1][1] = 20 * i +1;
 		return coords;
 	}
 
