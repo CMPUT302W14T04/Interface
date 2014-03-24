@@ -44,7 +44,7 @@ public class Main {
 				gui = new OriginalWiiuseJGuiTest(wiimotes[0], wiimotes[1]);
 				//gui = new WiiuseJGuiTest(wiimotes[0], wiimotes[1]);
 			} else {
-				//gui = new WiiuseJGuiTest();
+				gui = new OriginalWiiuseJGuiTest();
 			}
 			gui.setDefaultCloseOperation(WiiuseJGuiTest.EXIT_ON_CLOSE);
 			gui.setVisible(true);

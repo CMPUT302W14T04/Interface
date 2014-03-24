@@ -317,9 +317,9 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 						Short.MAX_VALUE)
  				//Uncomment this block to see each individual wiimote's pickup
 				// TODO (no actual TODO, just for fast jump)
-				.addComponent(irCombinedPanel, Alignment.TRAILING,
-						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
-						Short.MAX_VALUE)
+//				.addComponent(irCombinedPanel, Alignment.TRAILING,
+//						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
+//						Short.MAX_VALUE)
 				.addComponent(buttonPanel, Alignment.TRAILING,
 						GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE,
 						Short.MAX_VALUE));
@@ -333,10 +333,9 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 								Short.MAX_VALUE)
  						//Uncomment this block to see each individual wiimote's pickup
 						// TODO (no actual TODO, just for fast jump)
-						.addComponent(irCombinedPanel, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//						.addComponent(irCombinedPanel, GroupLayout.DEFAULT_SIZE,
+//								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(buttonPanel)
-
 		));
 		
 	}
@@ -460,6 +459,10 @@ public class WiiuseJGuiTest extends JFrame implements WiimoteListener {
 
 					// calibrate based on 8 points of the map
 					cal.generateBoundaries(calibMatrix);
+					
+					// update to display the messages/instructions
+					setDirection();
+					calibButton.setText(CState.getButton());
 					
 					// remove drawn calibration points
 					clearViews();
