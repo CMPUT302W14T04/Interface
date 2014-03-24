@@ -9,25 +9,37 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.TargetDataLine;
 
-public class SessionController {
+public class SessionController extends Thread {
 
 	static SessionModel model;
 	static TabbedPanelView view;
 
 	static SimpleDateFormat timeFormat;
-
+	static boolean recordState;	
+	public TargetDataLine targetDataLine;
+	AudioFileFormat.Type fileType = null;
+	File audioFile = null;
+	
 	public SessionController() {
 		model = new SessionModel();
 		view = new TabbedPanelView(model.getPanelWidth(),
 				model.getPanelHeight(), model.getProgramName());
 		addViewListeners();
+		recordState = true;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
+
 	}
 
 	public String formatTime(Date time) {
@@ -94,17 +106,67 @@ public class SessionController {
 		// TODO Auto-generated method stub
 
 	}
+	
+	public void start()
+	{
+		targetDataLine.start();
+		super.start();
+	}
+	
 
+	public void run()
+	{
+		
+		AudioInputStream stream = new AudioInputStream(targetDataLine);
+	    try
+	    {
+			AudioSystem.write(stream,fileType, audioFile);
+	    }
+	    catch (IOException e)
+	    {
+		   e.printStackTrace();
+	    }
+		
+	}
+	
 	private void recordingButtonPressed(MouseEvent evt) {
 		// TODO Auto-generated method stub
 
-		model.setRecordStartTime();
+		if (recordState) {
+			model.setRecordStartTime();
+			view.getRecordingButton().setText("Stop Recording Session");
+
+			try {
+
+				AudioFormat af = new AudioFormat(44100, 16, 2, true, false);
+				DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, af);
+				targetDataLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
+				targetDataLine.open(af);
+				fileType = AudioFileFormat.Type.WAVE;
+				audioFile = new File("testcam.wav");		
+             
+				//start recording
+				this.start();				
+				System.out.println("we are recording here");
+				
+			}
+		catch (Exception ex) {
+				System.out.println(ex);
+		}
+			recordState = false;
+		} else {
+			view.getRecordingButton().setText("Start Recording Session");
+			targetDataLine.stop();
+			targetDataLine.close();
+			recordState = true;
+			
+		}
 
 	}
 
 	private void saveButtonPressed(MouseEvent evt) {
 		// TODO Auto-generated method stub
-		
+
 		// fetch info for model from the view
 		model.setSessionName(view.getSessionName());
 		model.setMapName(view.getMapName());
@@ -117,22 +179,22 @@ public class SessionController {
 		model.compileSessionInfo();
 
 		try {
-			
+
 			String fileName = model.getSessionName();
 
-			File file = new File(fileName+".txt");
+			File file = new File(fileName + ".txt");
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
 				file.createNewFile();
 			}
-			
+
 			ArrayList<String> content;
 			content = model.getSessionRecord();
 
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
-			
+
 			for (String line : content) {
 				bw.write(line);
 				bw.newLine();
