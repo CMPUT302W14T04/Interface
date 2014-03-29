@@ -44,7 +44,7 @@ public class SessionInfoPanel extends JPanel {
 	private JTextField mapNameTextField;
 	private JTextField mapCodeTextField;
 	private JTextField locationTextField;
-	private JFormattedTextField dateTextField;
+	private JTextField dateTextField;
 	private JButton loadMapButton;
 	private JScrollPane interviewerScrollPane;
 	private JScrollPane intervieweeScrollPane;
@@ -78,7 +78,7 @@ public class SessionInfoPanel extends JPanel {
 		mapNameTextField = new JTextField();
 		mapCodeTextField = new JTextField();
 		locationTextField = new JTextField();
-		dateTextField = new JFormattedTextField();
+		dateTextField = new JTextField();
 		interviewerTextArea = new JTextArea();
 		interviewerScrollPane = new JScrollPane();
 		intervieweeTextArea = new JTextArea();
@@ -123,9 +123,9 @@ public class SessionInfoPanel extends JPanel {
 
 		locationTextField.setFont(fontTahoma); // NOI18N
 
-		dateTextField.setFormatterFactory(new DefaultFormatterFactory(
-				new DateFormatter(java.text.DateFormat
-						.getDateInstance(java.text.DateFormat.LONG))));
+//		dateTextField.setFormatterFactory(new DefaultFormatterFactory(
+//				new DateFormatter(java.text.DateFormat
+//						.getDateInstance(java.text.DateFormat.LONG))));
 		dateTextField.setFont(fontTahoma); // NOI18N
 
 		interviewerTextArea.setFont(fontTahoma); // NOI18N

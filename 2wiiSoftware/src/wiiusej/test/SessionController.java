@@ -17,7 +17,10 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
+<<<<<<< HEAD
 import javax.sound.sampled.LineUnavailableException;
+=======
+>>>>>>> theoretically most updated so far
 import javax.sound.sampled.TargetDataLine;
 
 public class SessionController extends Thread {
@@ -26,11 +29,17 @@ public class SessionController extends Thread {
 	static TabbedPanelView view;
 
 	static SimpleDateFormat timeFormat;
+<<<<<<< HEAD
 	static boolean recordState;	
 	public TargetDataLine targetDataLine;
 	AudioFileFormat.Type fileType = null;
 	File audioFile = null;
 	
+=======
+	static boolean recordState;
+	TargetDataLine targetDataLine;
+
+>>>>>>> theoretically most updated so far
 	public SessionController() {
 		model = new SessionModel();
 		view = new TabbedPanelView(model.getPanelWidth(),
@@ -132,6 +141,7 @@ public class SessionController extends Thread {
 	private void recordingButtonPressed(MouseEvent evt) {
 		// TODO Auto-generated method stub
 
+<<<<<<< HEAD
 		if (recordState) {
 			model.setRecordStartTime();
 			view.getRecordingButton().setText("Stop Recording Session");
@@ -161,6 +171,45 @@ public class SessionController extends Thread {
 			recordState = true;
 			
 		}
+=======
+//		if (recordState) {
+//			model.setRecordStartTime();
+//			view.getRecordingButton().setText("Stop Recording Session");
+//
+//			try {
+//
+//				AudioFormat af = new AudioFormat(44100, 16, 2, true, false);
+//				DataLine.Info dataLineInfo = new DataLine.Info(
+//						TargetDataLine.class, af);
+//				targetDataLine = (TargetDataLine) AudioSystem
+//						.getLine(dataLineInfo);
+//				targetDataLine.open(af);
+//				targetDataLine.start();
+//				AudioFileFormat.Type fileType = null;
+//				File audioFile = null;
+//
+//				fileType = AudioFileFormat.Type.WAVE;
+//				audioFile = new File("testcam.wav");
+//				
+//				AudioInputStream stream = new AudioInputStream(targetDataLine);
+//
+//				AudioSystem.write(stream,fileType, audioFile);
+//				targetDataLine.stop();
+//				targetDataLine.close();
+//				System.out.println("we got here");
+//			}
+//			catch (Exception ex) {
+//				System.out.println(ex);
+//			}
+//			recordState = false;
+//		} else {
+//			view.getRecordingButton().setText("Start Recording Session");
+//			targetDataLine.stop();
+//			targetDataLine.close();
+//			recordState = true;
+//			
+//		}
+>>>>>>> theoretically most updated so far
 
 	}
 

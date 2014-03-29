@@ -27,6 +27,12 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import wiiusej.WiiUseApiManager;
 import wiiusej.values.Calibrations;
@@ -233,10 +239,25 @@ public class IRCombined extends javax.swing.JPanel {
 		Graphics offG = mImage.getGraphics();
 		offG.setColor(backgroundColor);
 		offG.fillRect(0, 0, d.width, d.height);
+		Image image = null;
+		try {
+			image = ImageIO.read(new File("C:\\giraffe.jpg"));
+			int height = 100 * image.getHeight(this);
+			int width = 100 * image.getWidth(this);
+			
+			image = image.getScaledInstance(485,460, 0);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		offG.drawImage(image,0,0, this);
+		
 		repaint();
 	}
 	
-	public void drawCalib(int[] calibMatrix){
+	public void drawCalib(int[] calibMatrix, Color colour){
 		Shape marker = new java.awt.geom.Ellipse2D.Double(-5, -5, 10, 10);
 		
 		Graphics2D g2 = (Graphics2D) mImage.getGraphics();
@@ -247,9 +268,9 @@ public class IRCombined extends javax.swing.JPanel {
 		long yy = getHeight() - Math.round((double) getHeight() * calibMatrix[1] / 1024.0);
 
 		g2.translate(xx, yy);
-		g2.setPaint(Color.MAGENTA);
+		g2.setPaint(colour);
 		g2.draw(marker);
-		g2.setPaint(Color.MAGENTA);
+		g2.setPaint(colour);
 		g2.fill(marker);
 			
 		
